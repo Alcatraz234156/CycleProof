@@ -8,33 +8,35 @@
 
 <br>
 
-<img src="https://img.shields.io/badge/status-hackathon%20prototype-ffb020?style=for-the-badge" alt="Hackathon prototype">
+<img src="https://img.shields.io/badge/status-full--stack%20application-2ee6a0?style=for-the-badge" alt="Full-stack application">
 <img src="https://img.shields.io/badge/frontend-React%20%2B%20TypeScript-5ad7f0?style=for-the-badge&logo=react&logoColor=white" alt="React and TypeScript">
-<img src="https://img.shields.io/badge/tooling-Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite">
-<img src="https://img.shields.io/badge/mode-frontend%20first-2ee6a0?style=for-the-badge" alt="Frontend first">
+<img src="https://img.shields.io/badge/backend-Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+<img src="https://img.shields.io/badge/cloud-AWS-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white" alt="AWS">
 
 <br>
 
+<img src="https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite">
+<img src="https://img.shields.io/badge/AWS%20SAM-serverless-FF9900?style=flat-square" alt="AWS SAM">
+<img src="https://img.shields.io/badge/Lambda-API%20Gateway-FF9900?style=flat-square&logo=awslambda&logoColor=white" alt="Lambda and API Gateway">
+<img src="https://img.shields.io/badge/DynamoDB-%2B%20S3-4053D6?style=flat-square&logo=amazondynamodb&logoColor=white" alt="DynamoDB and S3">
 <img src="https://img.shields.io/badge/Node-18%2B-5FA04E?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node 18+">
-<img src="https://img.shields.io/badge/backend-AWS-FF9900?style=flat-square&logo=amazonaws&logoColor=white" alt="AWS backend">
-<img src="https://img.shields.io/badge/frontend%20%E2%86%94%20backend-not%20linked%20yet-ffb020?style=flat-square" alt="Frontend and backend not linked yet">
-<img src="https://img.shields.io/badge/demo%20data-fictional-2ee6a0?style=flat-square" alt="Fictional demo data">
 
 <br><br>
 
 **[🌍 Overview](#-overview)** &nbsp;•&nbsp;
-**[✨ Features](#-key-features)** &nbsp;•&nbsp;
-**[🔄 Workflow](#-how-the-workflow-works)** &nbsp;•&nbsp;
+**[✨ Features](#-features)** &nbsp;•&nbsp;
+**[🏗️ Architecture](#%EF%B8%8F-system-architecture)** &nbsp;•&nbsp;
 **[🚀 Get started](#-getting-started)** &nbsp;•&nbsp;
-**[📐 Data model](#-data-model-and-reconciliation-principles)** &nbsp;•&nbsp;
-**[🛣️ Roadmap](#%EF%B8%8F-roadmap)**
+**[☁️ Deploy](#%EF%B8%8F-aws-deployment)** &nbsp;•&nbsp;
+**[🔌 API](#-api-overview)** &nbsp;•&nbsp;
+**[🔐 Security](#-security-and-privacy)**
 
 </div>
 
 <br>
 
 > [!IMPORTANT]
-> **Hackathon prototype.** CycleProof highlights records that need attention. A mismatch is not, by itself, proof of fraud, proof of environmental harm, or proof that a claim is false. Human review and reliable source evidence remain essential.
+> A discrepancy is a **signal for investigation, not proof of fraud**. CycleProof supports evidence-based human review. It does not automatically establish that an environmental claim is true or false.
 
 <details>
 <summary><b>📑 Table of contents</b></summary>
@@ -43,18 +45,21 @@
 
 - [Overview](#-overview)
 - [The problem](#-the-problem)
-- [Our approach](#-our-approach)
-- [Key features](#-key-features)
-- [How the workflow works](#-how-the-workflow-works)
-- [Example scenario](#-example-scenario)
+- [The solution](#-the-solution)
+- [Features](#-features)
+- [How it works](#-how-it-works)
+- [System architecture](#%EF%B8%8F-system-architecture)
 - [Technology stack](#-technology-stack)
-- [Getting started](#-getting-started)
-- [Available scripts](#-available-scripts)
 - [Project structure](#%EF%B8%8F-project-structure)
-- [Data model and reconciliation principles](#-data-model-and-reconciliation-principles)
-- [Frontend-only scope](#%EF%B8%8F-frontend-only-scope)
-- [Privacy and demo data](#-privacy-and-demo-data)
-- [Current status](#-current-status)
+- [Getting started](#-getting-started)
+- [Environment configuration](#%EF%B8%8F-environment-configuration)
+- [Running locally](#-running-locally)
+- [AWS deployment](#%EF%B8%8F-aws-deployment)
+- [API overview](#-api-overview)
+- [Data model](#-data-model)
+- [Security and privacy](#-security-and-privacy)
+- [Testing](#-testing)
+- [Troubleshooting](#%EF%B8%8F-troubleshooting)
 - [Roadmap](#%EF%B8%8F-roadmap)
 - [Contributing](#-contributing)
 - [Disclaimer](#%EF%B8%8F-disclaimer)
@@ -65,9 +70,9 @@
 
 ## 🌍 Overview
 
-CycleProof is a prototype for reviewing environmental claims in the electronic-waste (e-waste) recycling chain. It helps reviewers compare reported material quantities with available records, see where evidence is missing, and investigate inconsistencies across the lifecycle of a material.
+CycleProof is a **full-stack environmental claim reconciliation platform** for the electronic-waste (e-waste) recycling chain. It helps organizations and reviewers compare reported material quantities with operational records, inspect supporting evidence, identify missing documentation, and investigate inconsistencies across the material lifecycle.
 
-A recycling claim may refer to material **collected, received at a facility, processed, recovered, or dispatched** to another destination. Those figures may be recorded by different organizations and in different files. CycleProof brings the information into one review experience so that gaps are easier to see and explain.
+A recycling claim may describe material **collected, received at a facility, processed, recovered, or dispatched**. Those records can be produced by different organizations and stored in different formats. CycleProof brings claims, evidence, material-flow records, discrepancy findings, and review history into one unified workflow.
 
 <div align="center">
   <img src="assets/material-journey.svg" alt="Material journey: Collected, Received, Processed, Recovered, Dispatched" width="100%">
@@ -75,155 +80,219 @@ A recycling claim may refer to material **collected, received at a facility, pro
 
 <br>
 
-> [!NOTE]
-> Built for **AWS Environmental Hacks by WeMakeDevs**. The current focus is the frontend experience. The project also includes an AWS backend, which is **not linked to the frontend yet**; integration is out of scope until separately authorized.
+The application combines a **web frontend** with a **cloud backend**. The frontend provides dashboards and review tools. The backend exposes APIs, stores application records, and manages evidence files using AWS services.
 
-## 🔎 The problem
+## 🎯 The problem
 
-Environmental and recycling claims are hard to evaluate when supporting records are fragmented across spreadsheets, documents, organizations, and facilities. Reviewers may need to compare quantities and identifiers by hand to answer questions like these:
+Environmental and recycling claims are hard to evaluate when supporting records are fragmented across spreadsheets, documents, organizations, and facilities. Reviewers may have to compare multiple quantities and references by hand to determine:
 
-| | Question a reviewer faces |
+| | Question |
 | :-: | --- |
-| 🔗 | Does the quantity reported as **collected** match the records **received** by the next facility? |
-| 📎 | Is there documentation to support a reported **recovery** quantity? |
-| 🧬 | Are any records **duplicated** or inconsistent? |
-| 📉 | At which **stage** does a material quantity stop reconciling? |
-| 🚧 | Which claims have **unresolved evidence gaps**? |
-| 🕒 | What **changed** during the review, and why was a decision made? |
+| ⚖️ | Whether reported quantities **align** across the recycling chain |
+| 📎 | Whether the **evidence** needed to support a claim is present |
+| 🕳️ | Where an **unexplained difference** appears |
+| 🧬 | Whether records contain **duplicate or inconsistent** information |
+| 📋 | Which claims **need review**, and what actions have already been taken |
 
-Manual reconciliation makes these issues slow to find and hard to explain. CycleProof gives reviewers a clearer place to inspect the records and document the review.
+That process is slow and hard to audit when records and explanations are scattered.
 
-## 💡 Our approach
+## 💡 The solution
 
-The review is organized around three connected concepts.
+CycleProof organizes the process around three connected concepts.
 
 <table>
 <tr>
 <td width="33%" valign="top">
 
 ### 🏷️ Claims
-What an organization **reports**.
+Reported environmental or material-handling **quantities**.
 
 </td>
 <td width="33%" valign="top">
 
 ### 📎 Evidence and records
-The documents and entries **available to support** the report.
+The **documents and operational records** used to support those claims.
 
 </td>
 <td width="33%" valign="top">
 
 ### ⚖️ Reconciliation and review
-Comparisons that **identify differences** and help a reviewer investigate them.
+**Comparisons** that surface inconsistencies and help reviewers document their conclusions.
 
 </td>
 </tr>
 </table>
 
-The interface makes clear which values were compared, which evidence is available, what is missing, and what remains unresolved. It should never turn a mathematical mismatch into an unsupported accusation.
+The system keeps the relationships between claims, organizations, material stages, evidence, discrepancies, and review events, so a user can investigate an issue without losing the context behind it.
 
 <img src="assets/divider.svg" alt="" width="100%">
 
-## ✨ Key features
-
-> [!NOTE]
-> This describes the **intended** CycleProof experience. Individual features may still be in development; see [Current status](#-current-status).
+## ✨ Features
 
 | | Feature | What it does |
 | :-: | --- | --- |
-| 📊 | **Dashboard** | Summarizes claims awaiting review, open discrepancies, missing evidence, and recent activity, using the same dataset as the detailed screens |
-| 🔍 | **Claims explorer** | Search, filter, sort, and open claims, showing organization, period, quantities, evidence coverage, status, and outstanding issues |
-| 📄 | **Claim details** | A central review page that brings together quantity comparisons, evidence references, discrepancies, notes, and history |
-| 🛤️ | **Material journey** | Shows the flow Collected → Received → Processed → Recovered → Dispatched and where records stop reconciling |
-| ⚖️ | **Discrepancy explorer** | A workspace for flagged issues, with the comparison behind each flag and a way to record investigation status |
-| 📎 | **Evidence management** | Inspect evidence references and, in the prototype, import CSV files locally for validation, column mapping, and preview |
-| 🕒 | **Activity timeline** | Evidence additions, quantity edits, notes, discrepancy updates, and status changes in order |
-| 🏭 | **Organizations and facilities** | Profiles for fictional collection centers, recyclers, processing, recovery, and dispatch sites, linked to their claims |
-| 🔔 | **Notifications** | Demo alerts for new discrepancies, evidence gaps, and pending reviews |
-| 📈 | **Analytics and reporting** | Summaries of reconciliation results, evidence completeness, and discrepancy patterns, labelled with scope and generation time |
-| ⚙️ | **Settings and guided demo** | Browser-side preferences and a walkthrough for first-time users |
+| 📊 | **Dashboard** | Claims, pending reviews, evidence gaps, open discrepancies, and recent activity in one view |
+| 🔍 | **Claims explorer** | Search, filter, sort, and inspect claims by organization, material, period, review status, and more |
+| 📄 | **Claim details** | A full workspace: reported quantities, evidence, reconciliation results, discrepancies, notes, and history |
+| 🛤️ | **Material journey** | Follow Collected → Received → Processed → Recovered → Dispatched and see where information stops reconciling |
+| ⚖️ | **Discrepancy explorer** | Quantity mismatches, missing evidence, possible duplicates, and inconsistent dates or identifiers, each with its comparison, explanation, status, and source records |
+| 📎 | **Evidence management** | Upload and manage supporting documents, link them to claims or stages, and import structured CSV records with validation and preview |
+| 🏭 | **Organizations and facilities** | Profiles for collection centers, recyclers, processing, recovery, and dispatch sites, with their claims and review history |
+| 🕒 | **Activity timeline** | Evidence changes, quantity updates, review notes, and status transitions in order |
+| 🔔 | **Notifications** | Review tasks, new discrepancies, missing evidence, and other items needing attention |
+| 📈 | **Analytics and reporting** | Reconciliation outcomes, quantities, evidence completeness, and discrepancy trends, with claim-level and filtered reports |
+| ⚙️ | **Settings and onboarding** | Preferences, reconciliation thresholds where authorized, and a walkthrough of the review workflow |
+| 🧑‍⚖️ | **Human-centered review** | Reviewers add explanations, request information, update statuses, and record outcomes. Automated flags stay separate from human decisions |
 
-<details>
-<summary><b>🛤️ &nbsp;More on the material journey and the discrepancy explorer</b></summary>
+> [!NOTE]
+> Production audit guarantees for the activity timeline depend on the deployed implementation and configuration.
 
-<br>
-
-**Material journey.** Reviewers can inspect the values available at each stage and see where records no longer reconcile. **Missing information is shown as missing, never silently treated as zero.**
-
-**Discrepancy explorer.** Flags cover quantity mismatches, missing evidence, suspected duplicate entries, and inconsistent identifiers or dates. Each flag should explain the comparison that triggered it.
-
-**Activity timeline.** A local demo timeline illustrates review history, but it is **not a tamper-proof audit log**.
-
-**Evidence management.** The frontend-only version does not upload imported files to a server.
-
-</details>
-
-## 🔄 How the workflow works
+## 🔄 How it works
 
 ```mermaid
 flowchart LR
-    A[1 · Open a claim] --> B[2 · Inspect the<br/>material journey]
-    B --> C[3 · Check the evidence]
-    C --> D[4 · Investigate flags]
-    D --> E[5 · Update review status]
-    E --> F[6 · Review history<br/>and report]
+    A[1 · Create or<br/>import a claim] --> B[2 · Attach records<br/>and evidence]
+    B --> C[3 · Reconcile<br/>quantities]
+    C --> D[4 · Investigate<br/>flagged differences]
+    D --> E[5 · Record a<br/>review outcome]
+    E --> F[6 · Track<br/>the history]
+    F --> G[7 · Generate<br/>a report]
 
     style A fill:#b8f05a,stroke:#0b1f1a,color:#0b1f1a
-    style B fill:#6fe58a,stroke:#0b1f1a,color:#0b1f1a
+    style B fill:#8fe97b,stroke:#0b1f1a,color:#0b1f1a
     style C fill:#2ee6a0,stroke:#0b1f1a,color:#0b1f1a
     style D fill:#ffe3b0,stroke:#ffb020,color:#0b1f1a
     style E fill:#3fd6c8,stroke:#0b1f1a,color:#0b1f1a
     style F fill:#5ad7f0,stroke:#0b1f1a,color:#0b1f1a
+    style G fill:#9dbcff,stroke:#0b1f1a,color:#0b1f1a
 ```
 
-1. **Open a claim.** Review the organization, reporting period, and claimed material quantities.
-2. **Inspect the material journey.** Compare quantities across collection, receipt, processing, recovery, and dispatch where records are available.
-3. **Check the evidence.** Inspect supporting document references and identify missing or incomplete records.
-4. **Investigate flags.** Review the values and rules behind a discrepancy, then add notes or request more information.
-5. **Update the review status.** Record whether the issue is open, under review, needs more information, or resolved.
-6. **Review the history and report.** Inspect the recorded demo activity and export or print a summary when that functionality is available.
+1. **Create or import a claim.** Capture the organization, reporting period, material, and claimed quantities.
+2. **Attach records and evidence.** Associate operational records and documents with the claim and the relevant material stages.
+3. **Reconcile available quantities.** Compare compatible values across the material journey using configured rules.
+4. **Investigate flagged differences.** Review the values, source records, missing evidence, and explanation for each finding.
+5. **Record a review outcome.** Add notes, request more information, or update the discrepancy and claim status.
+6. **Track the history.** Inspect relevant activity and notification records.
+7. **Generate a report.** Export or print a summary of the claim, reconciliation, evidence, and review outcome.
 
-## 🧪 Example scenario
+## 🏗️ System architecture
 
-Imagine a **fictional** recycler reports that it recovered **820 kg** of a particular material. The available processing record accounts for **790 kg**.
+CycleProof uses a client-server architecture. The browser application talks to an API, and backend functions validate requests and interact with persistent storage.
 
-| Source | Quantity | |
-| --- | ---: | --- |
-| Reported recovery | **820 kg** | claim |
-| Processing record | **790 kg** | record |
-| Difference | **30 kg** | 🟧 flagged for investigation |
+```mermaid
+flowchart TB
+    Web["🖥️ Web application<br/>React + TypeScript"]
+    GW["🚪 Amazon API Gateway"]
+    FN["⚙️ AWS Lambda · Python<br/>request handlers, validation,<br/>business logic"]
+    DB[("🗄️ Amazon DynamoDB<br/>claims, review, metadata")]
+    S3[("📦 Amazon S3<br/>evidence files and documents")]
 
-CycleProof could flag the 30 kg difference, show the records used in the comparison, and indicate whether supporting evidence is missing. A reviewer could add a note and mark the issue as **under review**.
+    Web -- "HTTPS / JSON" --> GW
+    GW --> FN
+    FN --> DB
+    FN --> S3
 
-> [!WARNING]
-> This flag would not establish *why* the difference exists. It could reflect timing, measurement methods, a recording error, incomplete records, or another explanation. The reviewer must investigate before drawing a conclusion.
+    style Web fill:#5ad7f0,stroke:#0b1f1a,color:#0b1f1a
+    style GW fill:#ffe3b0,stroke:#FF9900,color:#0b1f1a
+    style FN fill:#FF9900,stroke:#0b1f1a,color:#0b1f1a
+    style DB fill:#d8defc,stroke:#4053D6,color:#0b1f1a
+    style S3 fill:#d6f7f4,stroke:#2ee6a0,color:#0b1f1a
+```
+
+> [!NOTE]
+> This diagram describes the intended deployed architecture. Actual resources, routes, IAM permissions, table keys, and storage policies should match the infrastructure configuration in the repository.
+
+<details>
+<summary><b>🧩 &nbsp;Component responsibilities</b></summary>
+
+<br>
+
+| Component | Responsibility |
+| --- | --- |
+| **Frontend** | Navigation, dashboards, data entry, evidence review, visualizations, and reports |
+| **Amazon API Gateway** | HTTPS API entry point for frontend requests |
+| **AWS Lambda** | Python handlers for request validation, reconciliation logic, and application operations |
+| **Amazon DynamoDB** | Persistent structured application data |
+| **Amazon S3** | Evidence file storage, with access controlled by the backend and AWS permissions |
+
+</details>
 
 <img src="assets/divider.svg" alt="" width="100%">
 
 ## 🧰 Technology stack
 
-<img src="https://skillicons.dev/icons?i=react,ts,vite,css,npm,aws&perline=6" alt="React, TypeScript, Vite, CSS, npm, AWS">
+<img src="https://skillicons.dev/icons?i=react,ts,vite,css,python,aws,dynamodb,docker,git&perline=9" alt="React, TypeScript, Vite, CSS, Python, AWS, DynamoDB, Docker, Git">
 
-| Layer | Technology | Role |
-| --- | --- | --- |
-| **UI** | React | Component-based user interface |
-| **Language** | TypeScript | Typed application code |
-| **Tooling** | Vite | Local dev server and production build |
-| **Styling** | CSS | Application styling |
-| **Maps** | Leaflet | In the current dependency set; use only where a map is relevant |
-| **Backend** | AWS | Exists in the project, **not yet linked** to the frontend |
+<table>
+<tr>
+<td width="33%" valign="top">
 
-Exact installed versions and scripts are defined in `frontend/package.json` and `frontend/package-lock.json`.
+### 🖥️ Frontend
+- React
+- TypeScript
+- Vite
+- CSS and reusable UI components
 
-```mermaid
-flowchart LR
-    UI[React frontend<br/>browser-side demo data] -. not linked yet .-> API[AWS backend]
-    UI --> Demo[(Fictional demo records<br/>in the browser)]
+</td>
+<td width="33%" valign="top">
 
-    style UI fill:#5ad7f0,stroke:#0b1f1a,color:#0b1f1a
-    style API fill:#ffe3b0,stroke:#FF9900,color:#0b1f1a,stroke-dasharray: 5 5
-    style Demo fill:#b8f05a,stroke:#0b1f1a,color:#0b1f1a
+### ☁️ Backend
+- Python
+- AWS Lambda
+- Amazon API Gateway
+- Amazon DynamoDB
+- Amazon S3
+- AWS SAM for infrastructure definition and deployment
+
+</td>
+<td width="33%" valign="top">
+
+### 🛠️ Dev and testing
+- Node.js and npm
+- Python and pip
+- AWS SAM CLI
+- Docker, where the local SAM build needs it
+- Git
+
+</td>
+</tr>
+</table>
+
+Refer to the repository manifests and the SAM template for exact dependency versions and configured resources.
+
+## 🗂️ Project structure
+
+The repository contains a frontend application and an AWS SAM backend. Adapt this illustration to the actual layout.
+
+<details>
+<summary><b>Expand the tree</b></summary>
+
+<br>
+
+```text
+CycleProof/
+├── README.md
+├── frontend/
+│   ├── package.json
+│   ├── package-lock.json
+│   ├── vite.config.ts
+│   └── src/
+│       ├── components/
+│       ├── services/
+│       ├── types/
+│       ├── App.tsx
+│       └── main.tsx
+└── backend/
+    ├── template.yaml
+    ├── requirements.txt
+    ├── src/
+    │   └── handlers/
+    └── tests/
 ```
+
+File names and handler locations may differ. Use the actual repository files as the source of truth.
+
+</details>
 
 ## 🚀 Getting started
 
@@ -232,13 +301,23 @@ flowchart LR
 
 <br>
 
-- **Node.js 18** or newer
-- **npm** (included with Node.js)
+- **Node.js 18** or newer, and npm
+- A **Python** version supported by the Lambda runtime configured in the SAM template
+- **AWS SAM CLI**
+- **Docker**, if your SAM build configuration requires it
+- **AWS CLI**, for deployment
+- An **AWS account** and credentials with permissions appropriate to the resources being deployed
 
 ```bash
 node --version
 npm --version
+python --version
+sam --version
+aws --version
+docker --version
 ```
+
+A tool is only required for the commands that use it. Docker is not necessary for every SAM workflow.
 
 </details>
 
@@ -252,232 +331,421 @@ git clone <YOUR_REPOSITORY_URL>
 cd <YOUR_REPOSITORY_DIRECTORY>
 ```
 
-Or download and extract the project ZIP, then open a terminal in the extracted directory. Replace the placeholders with the real repository URL and directory name.
+Replace the placeholders with your repository URL and directory.
 
 </details>
 
+## ⚙️ Environment configuration
+
+The frontend needs the base URL of the deployed or locally running API. Use the variable name the application already expects. For a Vite frontend, a common convention is:
+
+```bash
+VITE_API_BASE_URL=http://127.0.0.1:3000
+```
+
+For a deployed environment, set it to the API Gateway URL from the deployment outputs. The URL above is illustrative, since the actual local API URL depends on the configured SAM template.
+
+The backend should get resource names and runtime configuration from environment variables or the SAM template. Typical settings:
+
+- DynamoDB table names
+- S3 evidence bucket name
+- Application environment
+- Logging level
+- Any explicitly configured reconciliation thresholds
+
+> [!CAUTION]
+> Do not commit secrets, AWS access keys, credentials, private evidence, or production environment files. Prefer IAM roles and managed secret storage. Never put secrets in `VITE_*` variables, because they are bundled into client-side code.
+
+## 💻 Running locally
+
 <details open>
-<summary><b>3 · Install and run the frontend</b></summary>
+<summary><b>🖥️ &nbsp;Frontend</b></summary>
 
 <br>
 
 ```bash
 cd frontend
 npm install
-npm run dev
+npm run dev        # start the dev server
+npm run build      # type-check and create a production bundle
 ```
 
-Vite prints a local URL, commonly **`http://localhost:5173`**. Open it in your browser.
-
-> [!TIP]
-> Run these commands from the directory that contains the frontend's `package.json`. If your copy has it at the repository root, run them from there instead.
+Open the local URL printed by Vite in the terminal.
 
 </details>
 
-<details>
-<summary><b>4 · Build and preview a production bundle</b></summary>
+<details open>
+<summary><b>☁️ &nbsp;Backend</b></summary>
 
 <br>
+
+Open a separate terminal at the directory containing `template.yaml`:
 
 ```bash
-npm run build      # type-check and create a production bundle
-npm run preview    # serve the production build locally
+cd backend
+sam validate
+sam build
+sam local start-api   # if the template defines a local API via API Gateway events
 ```
 
-Resolve any reported TypeScript errors before treating the build as successful. Use the local URL printed by Vite to inspect the build.
-
-</details>
-
-### 📜 Available scripts
-
-Run from the `frontend` directory.
-
-| Command | Purpose |
-| --- | --- |
-| `npm install` | Install project dependencies |
-| `npm run dev` | Start the Vite development server |
-| `npm run build` | Run the configured TypeScript checks and create a production bundle |
-| `npm run preview` | Serve the production build locally |
-
-> No backend, database, AWS credentials, or cloud deployment is required for the intended frontend-only demo.
-
-## 🗂️ Project structure
-
-The layout can evolve as the application is adapted from its original project. The frontend currently follows a React and TypeScript structure similar to this:
-
-<details>
-<summary><b>Expand the tree</b></summary>
-
-<br>
-
-```text
-CycleProof/
-├── README.md
-├── backend/               # AWS backend (not yet linked to the frontend)
-└── frontend/
-    ├── package.json
-    ├── package-lock.json
-    ├── index.html
-    ├── vite.config.ts
-    ├── tsconfig.json
-    └── src/
-        ├── main.tsx       # React entry point
-        ├── App.tsx        # Main application composition and top-level UI
-        ├── index.css      # Global styles and shared design rules
-        ├── components/    # Reusable UI components
-        ├── services/      # Client-side helpers and demo-data logic
-        ├── types/         # TypeScript types and interfaces
-        └── lib/           # Small reusable utilities and hooks
-```
-
-Use the actual source tree as the source of truth if file names differ in your checkout, and avoid creating duplicate versions of existing components or styles.
-
-</details>
-
-<img src="assets/divider.svg" alt="" width="100%">
-
-## 📐 Data model and reconciliation principles
-
-Related entities should be represented consistently rather than hardcoding separate numbers in each screen.
-
-```mermaid
-erDiagram
-    ORGANIZATION ||--o{ CLAIM : reports
-    CLAIM ||--o{ STAGE_RECORD : "has"
-    CLAIM ||--o{ EVIDENCE_ITEM : "supported by"
-    CLAIM ||--o{ DISCREPANCY : "may raise"
-    DISCREPANCY ||--o{ REVIEW_NOTE : "investigated via"
-    CLAIM ||--o{ ACTIVITY_EVENT : "logs"
-
-    ORGANIZATION { string name string facility_type string location }
-    CLAIM { string claim_id string period string material_type string review_status }
-    STAGE_RECORD { string stage number quantity string unit string date string source_ref }
-    EVIDENCE_ITEM { string reference string evidence_type string status }
-    DISCREPANCY { string type number difference string explanation string investigation_status }
-    REVIEW_NOTE { string text string author_label string timestamp }
-    ACTIVITY_EVENT { string event_type string description string timestamp }
-```
-
-<details>
-<summary><b>🧩 &nbsp;Conceptual entities in detail</b></summary>
-
-<br>
-
-| Entity | Typical fields |
-| --- | --- |
-| **Claim** | claim ID, organization, reporting period, material type, claimed quantities, review status |
-| **Organization or facility** | ID, name, facility type, location, related claims |
-| **Material-stage record** | claim ID, stage, quantity, unit, date, source record reference |
-| **Evidence item** | document name or reference, evidence type, related claim or stage, availability and status |
-| **Discrepancy** | type, compared values, calculated difference, optional configured tolerance, explanation, investigation status |
-| **Review note** | claim or discrepancy reference, note text, author label, timestamp |
-| **Activity event** | related record, event type, description, timestamp |
-| **Notification** | message, related record, timestamp, read or unread state |
-
-These are conceptual entities, not a promise that every field or screen is already implemented.
-
-</details>
-
-### ⚖️ Reconciliation rules
-
-| | Rule |
-| :-: | --- |
-| 📏 | Compare quantities only when their **units and context** are compatible |
-| 👁️ | Keep the **source values visible** next to calculated differences |
-| 🧮 | Show the **formula or explanation** behind a flag |
-| 🕳️ | **Never assume** that missing data means zero |
-| ➗ | Avoid percentages when the denominator is zero or unavailable |
-| 🎚️ | Treat tolerances as **explicit, configurable demo rules**, not universal regulatory standards |
-| 🤖 | Distinguish **automated flags** from **human review outcomes** |
-| 🔖 | Preserve the **source of each value** where the data model supports it |
-
-## 🖥️ Frontend-only scope
-
-The current phase focuses on a working browser experience with mock data and local interactions.
-
-<table>
-<tr>
-<td width="50%" valign="top">
-
-### ✅ Included, where implemented
-- React-based interface and navigation
-- Fictional demo claims and organizations
-- Browser-side calculations and state changes
-- Local CSV validation and preview
-- Local preference or demo-state persistence
-- Client-side report generation or print workflows
-
-</td>
-<td width="50%" valign="top">
-
-### 🚫 Not included in this phase
-- Integration with the AWS backend (for example Lambda, API Gateway, DynamoDB, or S3)
-- A backend server or hosted database wired to the UI
-- Real authentication or role-based authorization
-- Server-side file uploads or cloud evidence storage
-- Connection to official recycler records or external verification
-- Legally binding certification or automated fraud determinations
-
-</td>
-</tr>
-</table>
-
-The code should stay organized so the backend can be connected later, but **backend integration must not be assumed to exist** in the frontend.
-
-## 🔐 Privacy and demo data
-
-> [!CAUTION]
-> Do not enter confidential business records, personal information, or sensitive operational data into a demo build.
-
-- 🧪 Sample claims, organizations, evidence references, and quantities should be **fictional** and clearly identified as demo data.
-- 💾 Browser storage is **not a secure database** and should not be treated as one.
-- 📄 CSV import in the frontend-only phase is for **local parsing, validation, and preview**, not server upload.
-- 🔄 Resetting the demo should restore a consistent sample state where that feature is implemented.
-
-## 📍 Current status
-
-CycleProof is a hackathon prototype under development. The existing React and TypeScript frontend is the starting point for the CycleProof experience, and the intended feature set covers claims review, material-flow visualization, evidence handling, discrepancy investigation, organization profiles, activity history, notifications, analytics, settings, and reporting.
-
-> [!WARNING]
-> Do not assume every planned feature is complete or connected to production data. Confirm what works in the current code and test the application locally.
-
-## 🛣️ Roadmap
+SAM prints the local endpoint. Point the frontend's API base URL at the endpoint and port your environment uses.
 
 > [!NOTE]
-> These are planned possibilities, not claims that the functionality already exists.
+> Local functions may still need valid resource configuration or test data. Local execution does not create or populate cloud resources automatically.
 
-- [ ] Complete and test all frontend screens and interactions
-- [ ] Improve consistency of shared mock data across dashboards, claims, analytics, and reports
-- [ ] Add automated tests for quantity calculations, CSV validation, and report generation
-- [ ] Conduct usability and accessibility checks
-- [ ] Define reconciliation rules with relevant recycling and compliance experts
-- [ ] Connect the frontend to the existing AWS backend
-- [ ] Integrate secure document storage and reliable source references
-- [ ] Add authentication, authorization, and audit controls before handling real operational data
-- [ ] Evaluate the workflow with people who do recycling, environmental reporting, or compliance reviews
+</details>
 
-## 🤝 Contributing
+## ☁️ AWS deployment
 
-If you are working on the prototype:
+> [!WARNING]
+> Deploying creates or updates cloud resources and may incur AWS charges. Review the template, permissions, region, and expected costs before proceeding.
 
-1. **Inspect** the existing components and styles before adding replacements.
-2. **Reuse** the project's design system and existing patterns.
-3. **Keep related screens connected** to the same underlying data.
-4. **Avoid adding backend or AWS dependencies** to the frontend during this phase.
-5. **Make controls work.** Every control should perform its stated action and give useful feedback.
-6. **Test locally.**
+<details>
+<summary><b>1 · Configure AWS credentials</b></summary>
 
-Before submitting a change, run this from the `frontend` directory:
+<br>
+
+Configure a suitable AWS CLI profile using your organization's approved method, then verify the identity and region before deploying.
+
+```bash
+aws sts get-caller-identity
+aws configure list
+```
+
+Avoid pasting access keys into source code or README files.
+
+</details>
+
+<details>
+<summary><b>2 · Validate and build</b></summary>
+
+<br>
+
+From the `backend` directory:
+
+```bash
+sam validate
+sam build
+```
+
+Resolve template and build errors before deploying.
+
+</details>
+
+<details>
+<summary><b>3 · Deploy</b></summary>
+
+<br>
+
+First-time guided deployment:
+
+```bash
+sam deploy --guided
+```
+
+Follow the prompts for stack name, AWS Region, deployment permissions, and template parameters. Review the generated configuration file before committing it, especially if it holds environment-specific information.
+
+For later deployments, if the saved configuration is appropriate:
+
+```bash
+sam deploy
+```
+
+</details>
+
+<details>
+<summary><b>4 · Configure the frontend</b></summary>
+
+<br>
+
+Copy the API base URL from the deployment outputs or the API Gateway console, set the frontend environment variable to it, and rebuild:
 
 ```bash
 npm run build
 ```
 
-Document any remaining build failures or incomplete functionality instead of claiming the project is fully tested.
+Deploy the resulting static frontend with the hosting approach chosen for the project. Static hosting is a separate step unless the SAM template explicitly defines it.
+
+</details>
+
+<details>
+<summary><b>5 · Verify the deployment</b></summary>
+
+<br>
+
+Test the deployed API and frontend with **non-sensitive sample data**, and confirm that:
+
+- [ ] API routes return the expected status codes and response formats
+- [ ] Lambda functions can access only the resources they need
+- [ ] DynamoDB operations persist and retrieve the expected records
+- [ ] Evidence upload and retrieval follow the configured access controls
+- [ ] Browser requests work with the intended CORS configuration
+- [ ] Logs are useful for diagnosis without exposing sensitive data
+
+</details>
+
+<details>
+<summary><b>6 · Clean up test resources</b></summary>
+
+<br>
+
+If the deployment is only a disposable test, review the stack and its retained resources before deleting it. Cloud resources, data, or buckets may have retention policies or deletion protections.
+
+```bash
+sam delete
+```
+
+Use this only when you understand which resources the stack will remove and have backed up any data you need.
+
+</details>
+
+<img src="assets/divider.svg" alt="" width="100%">
+
+## 🔌 API overview
+
+The frontend talks to backend endpoints over HTTPS. Exact route names, request bodies, response schemas, and authorization rules must come from the actual API implementation or OpenAPI specification.
+
+| Area | Typical operations |
+| --- | --- |
+| **Claims** | List, create, view, and update claims |
+| **Organizations** | List and view organizations and facilities |
+| **Material records** | Retrieve stage records and reconciliation results |
+| **Evidence** | Register evidence metadata and obtain authorized upload or download access |
+| **Discrepancies** | List, view, and update investigation status |
+| **Reviews** | Add notes and record review outcomes |
+| **Activity** | Retrieve claim-related event history |
+| **Notifications** | List notifications and update read state |
+| **Reports** | Retrieve report data or create an export |
+
+> [!NOTE]
+> These are functional categories, not guaranteed literal routes. Use the route definitions in the backend as the authoritative API reference.
+
+When the API changes, keep the frontend service layer, backend request validation, and response types aligned, and document authentication requirements, validation errors, pagination, and error responses once those contracts are final.
+
+## 🧱 Data model
+
+```mermaid
+erDiagram
+    ORGANIZATION ||--o{ CLAIM : reports
+    CLAIM ||--o{ STAGE_RECORD : "has"
+    CLAIM ||--o{ EVIDENCE : "supported by"
+    CLAIM ||--o{ DISCREPANCY : "may raise"
+    DISCREPANCY ||--o{ REVIEW_NOTE : "investigated via"
+    CLAIM ||--o{ ACTIVITY_EVENT : "logs"
+    CLAIM ||--o{ NOTIFICATION : "triggers"
+
+    ORGANIZATION { string name string type string location }
+    CLAIM { string id string period string material string status }
+    STAGE_RECORD { string stage number quantity string unit string source_ref }
+    EVIDENCE { string reference string file_location string type string state }
+    DISCREPANCY { string type number difference string tolerance string status }
+    REVIEW_NOTE { string note string author string timestamp }
+    ACTIVITY_EVENT { string event_type string actor string timestamp }
+    NOTIFICATION { string message string scope boolean read }
+```
+
+<details>
+<summary><b>🧩 &nbsp;Logical entities in detail</b></summary>
+
+<br>
+
+| Entity | Typical fields |
+| --- | --- |
+| **Claim** | identifier, organization, reporting period, material type, claimed quantities, status |
+| **Organization or facility** | identifier, name, type, location, associated claims |
+| **Material-stage record** | claim, lifecycle stage, quantity, unit, timestamp, source reference |
+| **Evidence metadata** | document reference, file location, type, related claim or stage, uploader, availability state |
+| **Discrepancy** | type, compared values, difference, configured tolerance, explanation, investigation status |
+| **Review note** | related claim or discrepancy, note, author, timestamp |
+| **Activity event** | event type, target record, description, actor, timestamp |
+| **Notification** | recipient or scope, message, related record, timestamp, read state |
+
+The actual DynamoDB table design may combine several logical entities into fewer tables. Consult the deployed schema and data-access code for partition keys, sort keys, indexes, and access patterns.
+
+</details>
+
+### ⚖️ Reconciliation principles
+
+| | Principle |
+| :-: | --- |
+| 📏 | Compare values only when **units and contexts** are compatible |
+| 👁️ | Keep **source values visible** next to calculated differences |
+| 🧮 | **Explain which rule** triggered a discrepancy |
+| 🕳️ | Do not treat **missing data as zero** without an explicit, justified rule |
+| ➗ | Avoid percentages with a zero or missing denominator |
+| 🎚️ | Make **tolerances explicit** and configurable where appropriate |
+| 🤖 | Keep **automated flags separate** from human decisions |
+| 🔖 | Preserve **source references** so findings trace back to the underlying records |
+
+## 🔐 Security and privacy
+
+A full-stack deployment should apply controls appropriate to the sensitivity of the data.
+
+<table>
+<tr>
+<td width="50%" valign="top">
+
+### 🔑 Access and data
+- Use **least-privilege IAM roles** for Lambda and other AWS resources
+- Restrict S3 access; never make evidence buckets public by default
+- Validate and authorize evidence upload and download operations
+- Validate incoming API payloads and file metadata
+- Apply authentication and authorization before exposing real organizational data
+- Configure **CORS** to allow only intended frontend origins in production
+
+</td>
+<td width="50%" valign="top">
+
+### 🛡️ Hygiene and operations
+- Keep secrets out of source control and frontend environment variables
+- Use **HTTPS** for deployed traffic
+- Limit uploaded file types and sizes, and consider malware scanning for untrusted files
+- Avoid logging document contents, credentials, or unnecessary personal information
+- Define retention, backup, and deletion policies for evidence and review records
+- Monitor errors and resource usage, and review CloudWatch logs for unexpected behavior
+
+</td>
+</tr>
+</table>
+
+> [!WARNING]
+> The precise controls available depend on the authentication, storage, and deployment configuration that is actually implemented. Do not describe the application as secure or compliant solely because it uses AWS.
+
+## 🧪 Testing
+
+<details open>
+<summary><b>▶️ &nbsp;Run the checks</b></summary>
+
+<br>
+
+Frontend, from the `frontend` directory:
+
+```bash
+npm install
+npm run build
+```
+
+Backend, from the `backend` directory. For a Python project using pytest:
+
+```bash
+python -m pip install -r requirements.txt
+python -m pytest
+```
+
+Adjust the dependency file or test command if the repository uses a different setup.
+
+</details>
+
+<details>
+<summary><b>🎯 &nbsp;Recommended test coverage</b></summary>
+
+<br>
+
+- [ ] Unit tests for quantity reconciliation and tolerance calculations
+- [ ] Validation of missing values, incompatible units, and zero denominators
+- [ ] CSV parsing, column mapping, malformed rows, and duplicate detection
+- [ ] Backend request validation and error handling
+- [ ] Data-access tests for claims, evidence metadata, and review status changes
+- [ ] API integration tests for expected response schemas and status codes
+- [ ] Authorization tests for evidence and organization-level data access
+- [ ] Frontend workflows for search, filters, review actions, notifications, and reports
+- [ ] End-to-end tests for a complete claim investigation
+- [ ] Deployment smoke tests after infrastructure changes
+
+</details>
+
+> [!CAUTION]
+> Use isolated test resources and synthetic data. Never run destructive tests against production records.
+
+## 🛠️ Troubleshooting
+
+<details>
+<summary><b>🌐 &nbsp;Frontend cannot reach the API</b></summary>
+
+<br>
+
+- Confirm the API base URL is correct
+- Verify the API is running or deployed
+- Inspect the browser network panel and backend logs
+- Check CORS configuration and request paths
+
+</details>
+
+<details>
+<summary><b>⚠️ &nbsp;API returns an error</b></summary>
+
+<br>
+
+- Inspect the HTTP status code and response body
+- Check Lambda logs in CloudWatch for the relevant request
+- Verify required environment variables and resource permissions
+- Confirm the request matches the backend's validation schema
+
+</details>
+
+<details>
+<summary><b>🔒 &nbsp;Lambda cannot access DynamoDB or S3</b></summary>
+
+<br>
+
+- Confirm the correct table or bucket name is configured
+- Review the Lambda execution role and least-privilege policies
+- Check the selected AWS Region and deployed stack outputs
+
+</details>
+
+<details>
+<summary><b>🧱 &nbsp;SAM build or local invocation fails</b></summary>
+
+<br>
+
+- Validate the template
+- Confirm Python and dependency versions match the configured Lambda runtime
+- Check Docker availability if the build configuration requires it
+- Read SAM output for the first underlying error instead of relying only on the final failure message
+
+</details>
+
+<details>
+<summary><b>📤 &nbsp;Evidence upload fails</b></summary>
+
+<br>
+
+- Check file size and file type restrictions
+- Confirm the upload flow and any presigned URL have not expired
+- Verify S3 permissions, CORS rules, and content-type handling
+- Avoid retrying destructive or duplicate operations without checking the resulting records
+
+</details>
+
+<img src="assets/divider.svg" alt="" width="100%">
+
+## 🛣️ Roadmap
+
+> [!NOTE]
+> Update this section as milestones are completed. Planned work is not an existing capability.
+
+- [ ] Improve reconciliation rules with domain experts
+- [ ] Expand integration and end-to-end test coverage
+- [ ] Strengthen organization-level access controls and audit protections
+- [ ] Improve large-file handling and evidence validation
+- [ ] Add clear export formats and reporting workflows
+- [ ] Improve operational monitoring and cost visibility
+- [ ] Evaluate usability with recycling operators and compliance reviewers
+- [ ] Document data retention and governance practices
+
+## 🤝 Contributing
+
+1. **Review** the current architecture and coding conventions before changing files.
+2. **Keep frontend API types aligned** with backend request and response schemas.
+3. **Add or update tests** when changing reconciliation logic or data contracts.
+4. **Avoid committing** secrets, private data, build output, or local environment files.
+5. **Run the relevant frontend and backend checks** before opening a pull request.
+6. **Describe** changed behavior, testing performed, and any known limitations.
 
 ## ⚖️ Disclaimer
 
-CycleProof is an early-stage prototype intended to support the review of environmental claims. It is not a regulatory certification system, legal determination, or substitute for an independent audit. Discrepancies indicate that information may need further investigation; they do not establish intent, fraud, or environmental impact. Any demo data is illustrative unless explicitly replaced with independently verified records.
+CycleProof is a software tool intended to support the review of environmental claims. It is not, by itself, a regulatory certification system, legal determination, or substitute for an independent audit. A discrepancy indicates that information may need further investigation; it does not establish fraud, intent, or environmental impact. Conclusions should be based on reliable evidence and qualified human review.
 
 <br>
 
