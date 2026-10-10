@@ -1,0 +1,407 @@
+// CycleProof — Mock Dataset
+// All fictional demo data. No real organizations, quantities, or claims.
+// Data is internally consistent: quantities, evidence, discrepancies, and
+// timeline events all reference the same IDs and values.
+
+import type {
+  Claim,
+  Organization,
+  EvidenceRecord,
+  Discrepancy,
+  TimelineEvent,
+  Notification,
+  UserPreferences,
+  AppState,
+} from '../types';
+
+// ─── Organizations ────────────────────────────────────────────────────────────
+
+export const INITIAL_ORGS: Organization[] = [
+  {
+    id: 'org-001',
+    name: 'ReNew Devices Cooperative',
+    type: 'E-Waste Recycler',
+    location: 'Pune, Maharashtra',
+    registrationId: 'MH-EWR-2021-0047',
+    contactName: 'Priya Mehta',
+    claimIds: ['CP-2026-001'],
+    totalClaimedTonnes: 32,
+    totalRecordedTonnes: 24,
+    openDiscrepancies: 0,
+    evidenceGaps: 0,
+    lastActivityIso: '2026-09-28T14:22:00Z',
+    status: 'Active',
+  },
+  {
+    id: 'org-002',
+    name: 'CircuitCycle Materials',
+    type: 'Processing Facility',
+    location: 'Chennai, Tamil Nadu',
+    registrationId: 'TN-PF-2019-0113',
+    contactName: 'Arjun Subramaniam',
+    claimIds: ['CP-2026-013'],
+    totalClaimedTonnes: 48,
+    totalRecordedTonnes: 29,
+    openDiscrepancies: 1,
+    evidenceGaps: 3,
+    lastActivityIso: '2026-10-05T09:11:00Z',
+    status: 'Under Review',
+  },
+  {
+    id: 'org-003',
+    name: 'GreenLoop Recovery Pvt. Ltd.',
+    type: 'Material Recovery Facility',
+    location: 'Ahmedabad, Gujarat',
+    registrationId: 'GJ-MRF-2020-0088',
+    contactName: 'Devika Sharma',
+    claimIds: ['CP-2026-014'],
+    totalClaimedTonnes: 100,
+    totalRecordedTonnes: 38,
+    openDiscrepancies: 2,
+    evidenceGaps: 2,
+    lastActivityIso: '2026-10-07T16:45:00Z',
+    status: 'Under Review',
+  },
+  {
+    id: 'org-004',
+    name: 'EcoBoard Processing Ltd.',
+    type: 'Processing Facility',
+    location: 'Hyderabad, Telangana',
+    registrationId: 'TS-PF-2022-0031',
+    contactName: 'Rahul Nair',
+    claimIds: ['CP-2026-015'],
+    totalClaimedTonnes: 75,
+    totalRecordedTonnes: 68,
+    openDiscrepancies: 1,
+    evidenceGaps: 1,
+    lastActivityIso: '2026-10-08T11:30:00Z',
+    status: 'Active',
+  },
+  {
+    id: 'org-005',
+    name: 'MetalSync Exports Pvt. Ltd.',
+    type: 'Dispatch Destination',
+    location: 'Mumbai, Maharashtra',
+    registrationId: 'MH-DD-2018-0205',
+    contactName: 'Nisha Krishnan',
+    claimIds: ['CP-2026-016'],
+    totalClaimedTonnes: 60,
+    totalRecordedTonnes: 58,
+    openDiscrepancies: 0,
+    evidenceGaps: 0,
+    lastActivityIso: '2026-09-30T08:55:00Z',
+    status: 'Active',
+  },
+];
+
+// ─── Claims ───────────────────────────────────────────────────────────────────
+
+export const INITIAL_CLAIMS: Claim[] = [
+  {
+    id: 'CP-2026-001',
+    orgId: 'org-001',
+    partner: 'ReNew Devices Cooperative',
+    period: 'Sep 2026',
+    submittedIso: '2026-09-20T10:00:00Z',
+    status: 'Reconciled',
+    collected: 32,
+    claimed: 32,
+    received: 31,
+    processed: 26,
+    recovered: 24,
+    dispatched: 24,
+    evidenceCount: 5,
+    evidenceAttached: 5,
+    reviewerNotes: 'All records match within acceptable tolerance. Dispatch confirmed by third-party chain of custody. Claim reconciled on 2026-09-28.',
+    assignedReviewer: 'Aarav Bose',
+  },
+  {
+    id: 'CP-2026-013',
+    orgId: 'org-002',
+    partner: 'CircuitCycle Materials',
+    period: 'Oct 2026',
+    submittedIso: '2026-10-01T08:30:00Z',
+    status: 'In review',
+    collected: 50,
+    claimed: 48,
+    received: 46,
+    processed: 35,
+    recovered: 29,
+    dispatched: 28,
+    evidenceCount: 7,
+    evidenceAttached: 4,
+    reviewerNotes: 'Three evidence documents are still outstanding: processing batch summary for batch B-22, chain of custody for DSP-3890, and collection log for site CC-Nungambakkam. Chasing submitter.',
+    assignedReviewer: 'Aarav Bose',
+  },
+  {
+    id: 'CP-2026-014',
+    orgId: 'org-003',
+    partner: 'GreenLoop Recovery Pvt. Ltd.',
+    period: 'Oct 2026',
+    submittedIso: '2026-10-03T11:15:00Z',
+    status: 'Needs review',
+    collected: 105,
+    claimed: 100,
+    received: 62,
+    processed: null, // not yet reported
+    recovered: 41,
+    dispatched: 38,
+    evidenceCount: 6,
+    evidenceAttached: 3,
+    reviewerNotes: '',
+    assignedReviewer: '',
+  },
+  {
+    id: 'CP-2026-015',
+    orgId: 'org-004',
+    partner: 'EcoBoard Processing Ltd.',
+    period: 'Oct 2026',
+    submittedIso: '2026-10-05T14:00:00Z',
+    status: 'In review',
+    collected: 76,
+    claimed: 75,
+    received: 74,
+    processed: 70,
+    recovered: 68,
+    dispatched: 65,
+    evidenceCount: 6,
+    evidenceAttached: 5,
+    reviewerNotes: 'Received vs claimed is within 1.3% — within demo tolerance. However, dispatched (65t) is 7t less than recovered (68t) with no processing loss record. Awaiting explanation from EcoBoard.',
+    assignedReviewer: 'Sunita Reddy',
+  },
+  {
+    id: 'CP-2026-016',
+    orgId: 'org-005',
+    partner: 'MetalSync Exports Pvt. Ltd.',
+    period: 'Sep 2026',
+    submittedIso: '2026-09-22T09:00:00Z',
+    status: 'Reconciled',
+    collected: 62,
+    claimed: 60,
+    received: 59,
+    processed: 58,
+    recovered: 58,
+    dispatched: 58,
+    evidenceCount: 5,
+    evidenceAttached: 5,
+    reviewerNotes: 'Initial discrepancy on collected vs claimed (2t) was explained by one collection site weighbridge calibration error — corrected by the facility. Resolved and reconciled on 2026-09-30.',
+    assignedReviewer: 'Aarav Bose',
+  },
+];
+
+// ─── Evidence Records ─────────────────────────────────────────────────────────
+
+export const INITIAL_EVIDENCE: EvidenceRecord[] = [
+  // CP-2026-001 (Reconciled — all 5 present)
+  { id: 'ev-001-1', claimId: 'CP-2026-001', type: 'Collection Log', reference: 'COL-7810', stage: 'Collected', dateIso: '2026-09-15T00:00:00Z', quantityTonnes: 32, source: 'ReNew Devices Cooperative', missing: false },
+  { id: 'ev-001-2', claimId: 'CP-2026-001', type: 'Weighbridge Ticket', reference: 'RCV-4410', stage: 'Received', dateIso: '2026-09-17T00:00:00Z', quantityTonnes: 31, source: 'Bharat Metals Weighbridge, Pune', missing: false },
+  { id: 'ev-001-3', claimId: 'CP-2026-001', type: 'Processing Batch Summary', reference: 'REC-5510', stage: 'Processed', dateIso: '2026-09-20T00:00:00Z', quantityTonnes: 26, source: 'ReNew Devices Cooperative', missing: false },
+  { id: 'ev-001-4', claimId: 'CP-2026-001', type: 'Processing Batch Summary', reference: 'REC-5511', stage: 'Recovered', dateIso: '2026-09-22T00:00:00Z', quantityTonnes: 24, source: 'ReNew Devices Cooperative', missing: false },
+  { id: 'ev-001-5', claimId: 'CP-2026-001', type: 'Chain of Custody', reference: 'DSP-2201', stage: 'Dispatched', dateIso: '2026-09-25T00:00:00Z', quantityTonnes: 24, source: 'NovaMetal Transport Ltd.', missing: false },
+
+  // CP-2026-013 (In review — 3 missing)
+  { id: 'ev-013-1', claimId: 'CP-2026-013', type: 'Collection Log', reference: 'COL-8102', stage: 'Collected', dateIso: '2026-09-28T00:00:00Z', quantityTonnes: 50, source: 'CircuitCycle Materials', missing: false },
+  { id: 'ev-013-2', claimId: 'CP-2026-013', type: 'Weighbridge Ticket', reference: 'RCV-4891', stage: 'Received', dateIso: '2026-10-01T00:00:00Z', quantityTonnes: 46, source: 'Sunrise Logistics Weighbridge', missing: false },
+  { id: 'ev-013-3', claimId: 'CP-2026-013', type: 'Processing Batch Summary', reference: 'REC-B22', stage: 'Processed', dateIso: '2026-10-04T00:00:00Z', quantityTonnes: null, source: 'CircuitCycle Materials', missing: true, notes: 'Batch summary for B-22 not yet received' },
+  { id: 'ev-013-4', claimId: 'CP-2026-013', type: 'Processing Batch Summary', reference: 'REC-6610', stage: 'Recovered', dateIso: '2026-10-05T00:00:00Z', quantityTonnes: 29, source: 'CircuitCycle Materials', missing: false },
+  { id: 'ev-013-5', claimId: 'CP-2026-013', type: 'Chain of Custody', reference: 'DSP-3890', stage: 'Dispatched', dateIso: '2026-10-06T00:00:00Z', quantityTonnes: null, source: 'Unknown', missing: true, notes: 'Chain of custody document not supplied' },
+  { id: 'ev-013-6', claimId: 'CP-2026-013', type: 'Collection Log', reference: 'COL-CC-NG', stage: 'Collected', dateIso: '2026-09-29T00:00:00Z', quantityTonnes: null, source: 'Site CC-Nungambakkam', missing: true, notes: 'Collection log for satellite site not submitted' },
+  { id: 'ev-013-7', claimId: 'CP-2026-013', type: 'Dispatch Receipt', reference: 'DSP-3891', stage: 'Dispatched', dateIso: '2026-10-07T00:00:00Z', quantityTonnes: 28, source: 'CircuitCycle Materials', missing: false },
+
+  // CP-2026-014 (Needs review — 3 missing, processing not reported)
+  { id: 'ev-014-1', claimId: 'CP-2026-014', type: 'Collection Log', reference: 'COL-9221', stage: 'Collected', dateIso: '2026-09-30T00:00:00Z', quantityTonnes: 105, source: 'GreenLoop Recovery Pvt. Ltd.', missing: false },
+  { id: 'ev-014-2', claimId: 'CP-2026-014', type: 'Weighbridge Ticket', reference: 'RCV-5042', stage: 'Received', dateIso: '2026-10-02T00:00:00Z', quantityTonnes: 62, source: 'BridgeTech Weighbridge, Ahmedabad', missing: false },
+  { id: 'ev-014-3', claimId: 'CP-2026-014', type: 'Processing Batch Summary', reference: 'REC-PROC-GL', stage: 'Processed', dateIso: '2026-10-04T00:00:00Z', quantityTonnes: null, source: 'GreenLoop Recovery Pvt. Ltd.', missing: true, notes: 'No processing batch summary submitted' },
+  { id: 'ev-014-4', claimId: 'CP-2026-014', type: 'Processing Batch Summary', reference: 'REC-2081', stage: 'Recovered', dateIso: '2026-10-05T00:00:00Z', quantityTonnes: 41, source: 'GreenLoop Recovery Pvt. Ltd.', missing: false },
+  { id: 'ev-014-5', claimId: 'CP-2026-014', type: 'Dispatch Receipt', reference: 'DSP-3321', stage: 'Dispatched', dateIso: '2026-10-06T00:00:00Z', quantityTonnes: 38, source: 'GreenLoop Recovery Pvt. Ltd.', missing: false },
+  { id: 'ev-014-6', claimId: 'CP-2026-014', type: 'Chain of Custody', reference: 'COC-GL-OCT', stage: 'Dispatched', dateIso: '2026-10-07T00:00:00Z', quantityTonnes: null, source: 'Unknown', missing: true, notes: 'Chain of custody not provided for dispatched batch' },
+
+  // CP-2026-015 (In review — 1 missing)
+  { id: 'ev-015-1', claimId: 'CP-2026-015', type: 'Collection Log', reference: 'COL-7703', stage: 'Collected', dateIso: '2026-10-01T00:00:00Z', quantityTonnes: 76, source: 'EcoBoard Processing Ltd.', missing: false },
+  { id: 'ev-015-2', claimId: 'CP-2026-015', type: 'Weighbridge Ticket', reference: 'RCV-5110', stage: 'Received', dateIso: '2026-10-03T00:00:00Z', quantityTonnes: 74, source: 'Deccan Logistics Weighbridge', missing: false },
+  { id: 'ev-015-3', claimId: 'CP-2026-015', type: 'Processing Batch Summary', reference: 'REC-8801', stage: 'Processed', dateIso: '2026-10-05T00:00:00Z', quantityTonnes: 70, source: 'EcoBoard Processing Ltd.', missing: false },
+  { id: 'ev-015-4', claimId: 'CP-2026-015', type: 'Processing Batch Summary', reference: 'REC-8802', stage: 'Recovered', dateIso: '2026-10-06T00:00:00Z', quantityTonnes: 68, source: 'EcoBoard Processing Ltd.', missing: false },
+  { id: 'ev-015-5', claimId: 'CP-2026-015', type: 'Dispatch Receipt', reference: 'DSP-5500', stage: 'Dispatched', dateIso: '2026-10-07T00:00:00Z', quantityTonnes: 65, source: 'EcoBoard Processing Ltd.', missing: false },
+  { id: 'ev-015-6', claimId: 'CP-2026-015', type: 'Chain of Custody', reference: 'COC-EB-OCT', stage: 'Dispatched', dateIso: '2026-10-08T00:00:00Z', quantityTonnes: null, source: 'Unknown', missing: true, notes: 'Awaiting chain of custody from receiving facility' },
+
+  // CP-2026-016 (Reconciled — all 5 present)
+  { id: 'ev-016-1', claimId: 'CP-2026-016', type: 'Collection Log', reference: 'COL-6610', stage: 'Collected', dateIso: '2026-09-18T00:00:00Z', quantityTonnes: 62, source: 'MetalSync Exports Pvt. Ltd.', missing: false },
+  { id: 'ev-016-2', claimId: 'CP-2026-016', type: 'Weighbridge Ticket', reference: 'RCV-4001', stage: 'Received', dateIso: '2026-09-20T00:00:00Z', quantityTonnes: 59, source: 'PortView Weighbridge, Mumbai', missing: false },
+  { id: 'ev-016-3', claimId: 'CP-2026-016', type: 'Processing Batch Summary', reference: 'REC-7100', stage: 'Processed', dateIso: '2026-09-23T00:00:00Z', quantityTonnes: 58, source: 'MetalSync Exports Pvt. Ltd.', missing: false },
+  { id: 'ev-016-4', claimId: 'CP-2026-016', type: 'Processing Batch Summary', reference: 'REC-7101', stage: 'Recovered', dateIso: '2026-09-25T00:00:00Z', quantityTonnes: 58, source: 'MetalSync Exports Pvt. Ltd.', missing: false },
+  { id: 'ev-016-5', claimId: 'CP-2026-016', type: 'Chain of Custody', reference: 'DSP-1890', stage: 'Dispatched', dateIso: '2026-09-28T00:00:00Z', quantityTonnes: 58, source: 'ArcticShip Logistics', missing: false },
+];
+
+// ─── Discrepancies ────────────────────────────────────────────────────────────
+
+export const INITIAL_DISCREPANCIES: Discrepancy[] = [
+  {
+    id: 'disc-001',
+    claimId: 'CP-2026-014',
+    orgId: 'org-003',
+    type: 'Quantity Mismatch',
+    description: 'Claimed quantity (100 t) is significantly higher than received quantity (62 t).',
+    expectedValue: 100,
+    observedValue: 62,
+    unit: 'tonnes',
+    absoluteDiff: 38,
+    pctDiff: 38,
+    tolerancePct: 5,
+    detectionExplanation: 'The claimed quantity exceeds the recorded received quantity by 38 t (38%). This exceeds the configured demo tolerance of 5%. A difference this large requires a supporting explanation — it may indicate collection-site recording errors, loss in transit, or an over-stated claim.',
+    relevantEvidenceIds: ['ev-014-1', 'ev-014-2'],
+    status: 'Open',
+    reviewerNotes: '',
+    detectedAt: '2026-10-07T08:00:00Z',
+  },
+  {
+    id: 'disc-002',
+    claimId: 'CP-2026-014',
+    orgId: 'org-003',
+    type: 'Missing Evidence',
+    description: 'Processing batch summary and chain of custody documents are absent.',
+    expectedValue: null,
+    observedValue: null,
+    unit: 'documents',
+    absoluteDiff: null,
+    pctDiff: null,
+    tolerancePct: null,
+    detectionExplanation: 'Two mandatory supporting documents have not been submitted: the processing batch summary (REC-PROC-GL) and the chain of custody for the dispatched batch (COC-GL-OCT). Without these, the processing and dispatch stages cannot be independently verified.',
+    relevantEvidenceIds: ['ev-014-3', 'ev-014-6'],
+    status: 'Open',
+    reviewerNotes: '',
+    detectedAt: '2026-10-07T08:01:00Z',
+  },
+  {
+    id: 'disc-003',
+    claimId: 'CP-2026-013',
+    orgId: 'org-002',
+    type: 'Missing Evidence',
+    description: 'Three evidence documents are outstanding for this claim.',
+    expectedValue: null,
+    observedValue: null,
+    unit: 'documents',
+    absoluteDiff: null,
+    pctDiff: null,
+    tolerancePct: null,
+    detectionExplanation: 'The processing batch summary for batch B-22, the chain of custody for DSP-3890, and the collection log for site CC-Nungambakkam have not been supplied. The claim cannot be fully reconciled until these are received.',
+    relevantEvidenceIds: ['ev-013-3', 'ev-013-5', 'ev-013-6'],
+    status: 'Under Review',
+    reviewerNotes: 'Contacted CircuitCycle Materials on 2026-10-05. They indicated batch B-22 summary will be submitted by 2026-10-12. Chain of custody pending third-party confirmation.',
+    detectedAt: '2026-10-05T09:00:00Z',
+  },
+  {
+    id: 'disc-004',
+    claimId: 'CP-2026-015',
+    orgId: 'org-004',
+    type: 'Unreconciled Loss',
+    description: 'Dispatched quantity (65 t) is 3 t less than recovered quantity (68 t) with no processing loss record.',
+    expectedValue: 68,
+    observedValue: 65,
+    unit: 'tonnes',
+    absoluteDiff: 3,
+    pctDiff: 4.41,
+    tolerancePct: 5,
+    detectionExplanation: 'The recovered quantity is 68 t and the dispatched quantity is 65 t. A 3 t difference (4.41%) exists between recovery and dispatch with no processing loss or rejection record to explain it. While below the 5% demo tolerance, the absence of a loss record is a documentation gap that should be explained.',
+    relevantEvidenceIds: ['ev-015-4', 'ev-015-5'],
+    status: 'Under Review',
+    reviewerNotes: 'EcoBoard says 3 t was rejected at final quality check before dispatch. Awaiting quality rejection certificate.',
+    detectedAt: '2026-10-08T10:00:00Z',
+  },
+  {
+    id: 'disc-005',
+    claimId: 'CP-2026-016',
+    orgId: 'org-005',
+    type: 'Quantity Mismatch',
+    description: 'Collected quantity (62 t) exceeded claimed quantity (60 t) — explained by weighbridge calibration error.',
+    expectedValue: 60,
+    observedValue: 62,
+    unit: 'tonnes',
+    absoluteDiff: 2,
+    pctDiff: 3.33,
+    tolerancePct: 5,
+    detectionExplanation: 'Collected quantity (62 t) was 2 t higher than the claimed quantity (60 t). The facility confirmed a weighbridge calibration error at collection site MH-002 and submitted a corrected reading. The corrected figure (60 t) aligns with the claim.',
+    relevantEvidenceIds: ['ev-016-1'],
+    status: 'Resolved',
+    reviewerNotes: 'Weighbridge calibration certificate received and verified. Corrected collection quantity confirmed as 60 t. Discrepancy resolved on 2026-09-30.',
+    detectedAt: '2026-09-23T07:00:00Z',
+    resolvedAt: '2026-09-30T08:55:00Z',
+  },
+];
+
+// ─── Timeline Events ──────────────────────────────────────────────────────────
+
+export const INITIAL_TIMELINE: TimelineEvent[] = [
+  // CP-2026-001
+  { id: 'tl-001-1', claimId: 'CP-2026-001', type: 'claim_created', title: 'Claim submitted', description: 'CP-2026-001 submitted by ReNew Devices Cooperative for Sep 2026.', actorRole: 'Submitter', timestamp: '2026-09-20T10:00:00Z' },
+  { id: 'tl-001-2', claimId: 'CP-2026-001', type: 'evidence_added', title: 'Evidence uploaded', description: 'All 5 evidence documents uploaded: collection log, weighbridge ticket, 2× processing summaries, chain of custody.', actorRole: 'Data Importer', timestamp: '2026-09-21T11:30:00Z' },
+  { id: 'tl-001-3', claimId: 'CP-2026-001', type: 'comment_added', title: 'Reviewer note added', description: 'All records match within acceptable tolerance. Dispatch confirmed by third-party chain of custody.', actorRole: 'Reviewer', timestamp: '2026-09-28T13:00:00Z' },
+  { id: 'tl-001-4', claimId: 'CP-2026-001', type: 'review_completed', title: 'Claim reconciled', description: 'Status changed to Reconciled by Aarav Bose.', actorRole: 'Reviewer', timestamp: '2026-09-28T14:22:00Z' },
+
+  // CP-2026-013
+  { id: 'tl-013-1', claimId: 'CP-2026-013', type: 'claim_created', title: 'Claim submitted', description: 'CP-2026-013 submitted by CircuitCycle Materials for Oct 2026.', actorRole: 'Submitter', timestamp: '2026-10-01T08:30:00Z' },
+  { id: 'tl-013-2', claimId: 'CP-2026-013', type: 'evidence_added', title: 'Partial evidence uploaded', description: '4 of 7 expected documents attached. 3 documents outstanding.', actorRole: 'Data Importer', timestamp: '2026-10-02T10:00:00Z' },
+  { id: 'tl-013-3', claimId: 'CP-2026-013', type: 'discrepancy_detected', title: 'Missing evidence flagged', description: 'System detected 3 missing mandatory documents (REC-B22, DSP-3890, COL-CC-NG).', actorRole: 'System', timestamp: '2026-10-05T09:00:00Z' },
+  { id: 'tl-013-4', claimId: 'CP-2026-013', type: 'comment_added', title: 'Reviewer contacted submitter', description: 'CircuitCycle indicated batch B-22 summary will be submitted by 2026-10-12. Chain of custody pending third-party.', actorRole: 'Reviewer', timestamp: '2026-10-05T09:11:00Z' },
+  { id: 'tl-013-5', claimId: 'CP-2026-013', type: 'status_changed', title: 'Status: In review', description: 'Claim moved to In Review by Aarav Bose pending missing documents.', actorRole: 'Reviewer', timestamp: '2026-10-05T09:15:00Z' },
+
+  // CP-2026-014
+  { id: 'tl-014-1', claimId: 'CP-2026-014', type: 'claim_created', title: 'Claim submitted', description: 'CP-2026-014 submitted by GreenLoop Recovery Pvt. Ltd. for Oct 2026.', actorRole: 'Submitter', timestamp: '2026-10-03T11:15:00Z' },
+  { id: 'tl-014-2', claimId: 'CP-2026-014', type: 'evidence_added', title: 'Evidence uploaded (partial)', description: '3 of 6 expected documents attached. Processing summary and chain of custody missing.', actorRole: 'Data Importer', timestamp: '2026-10-04T09:00:00Z' },
+  { id: 'tl-014-3', claimId: 'CP-2026-014', type: 'discrepancy_detected', title: 'Quantity mismatch detected', description: 'Claimed 100 t; received records show only 62 t — a 38 t (38%) gap exceeding the 5% demo tolerance.', actorRole: 'System', timestamp: '2026-10-07T08:00:00Z' },
+  { id: 'tl-014-4', claimId: 'CP-2026-014', type: 'discrepancy_detected', title: 'Missing evidence flagged', description: 'Processing batch summary and chain of custody absent.', actorRole: 'System', timestamp: '2026-10-07T08:01:00Z' },
+
+  // CP-2026-015
+  { id: 'tl-015-1', claimId: 'CP-2026-015', type: 'claim_created', title: 'Claim submitted', description: 'CP-2026-015 submitted by EcoBoard Processing Ltd. for Oct 2026.', actorRole: 'Submitter', timestamp: '2026-10-05T14:00:00Z' },
+  { id: 'tl-015-2', claimId: 'CP-2026-015', type: 'evidence_added', title: 'Evidence uploaded (5/6)', description: '5 of 6 expected documents attached. Chain of custody pending.', actorRole: 'Data Importer', timestamp: '2026-10-06T10:00:00Z' },
+  { id: 'tl-015-3', claimId: 'CP-2026-015', type: 'discrepancy_detected', title: 'Unreconciled loss flagged', description: 'Recovered 68 t, dispatched 65 t — 3 t gap without a loss record.', actorRole: 'System', timestamp: '2026-10-08T10:00:00Z' },
+  { id: 'tl-015-4', claimId: 'CP-2026-015', type: 'comment_added', title: 'Reviewer note', description: 'EcoBoard explains 3 t rejected at quality check. Awaiting rejection certificate.', actorRole: 'Reviewer', timestamp: '2026-10-08T11:30:00Z' },
+  { id: 'tl-015-5', claimId: 'CP-2026-015', type: 'status_changed', title: 'Status: In review', description: 'Claim placed In Review by Sunita Reddy.', actorRole: 'Reviewer', timestamp: '2026-10-08T11:35:00Z' },
+
+  // CP-2026-016
+  { id: 'tl-016-1', claimId: 'CP-2026-016', type: 'claim_created', title: 'Claim submitted', description: 'CP-2026-016 submitted by MetalSync Exports Pvt. Ltd. for Sep 2026.', actorRole: 'Submitter', timestamp: '2026-09-22T09:00:00Z' },
+  { id: 'tl-016-2', claimId: 'CP-2026-016', type: 'evidence_added', title: 'All evidence uploaded', description: 'All 5 documents attached at submission.', actorRole: 'Data Importer', timestamp: '2026-09-22T09:30:00Z' },
+  { id: 'tl-016-3', claimId: 'CP-2026-016', type: 'discrepancy_detected', title: 'Collected vs claimed mismatch', description: 'Collected 62 t vs claimed 60 t — 2 t difference flagged for review.', actorRole: 'System', timestamp: '2026-09-23T07:00:00Z' },
+  { id: 'tl-016-4', claimId: 'CP-2026-016', type: 'evidence_resolved', title: 'Calibration certificate received', description: 'Weighbridge calibration error confirmed and corrected. Adjusted quantity aligns with claim.', actorRole: 'Reviewer', timestamp: '2026-09-29T15:00:00Z' },
+  { id: 'tl-016-5', claimId: 'CP-2026-016', type: 'review_completed', title: 'Discrepancy resolved', description: 'Calibration issue explained and verified. Discrepancy closed.', actorRole: 'Reviewer', timestamp: '2026-09-30T08:50:00Z' },
+  { id: 'tl-016-6', claimId: 'CP-2026-016', type: 'review_completed', title: 'Claim reconciled', description: 'Status changed to Reconciled by Aarav Bose.', actorRole: 'Reviewer', timestamp: '2026-09-30T08:55:00Z' },
+];
+
+// ─── Notifications ────────────────────────────────────────────────────────────
+
+export const INITIAL_NOTIFICATIONS: Notification[] = [
+  { id: 'notif-001', type: 'discrepancy', title: 'Major quantity gap detected', body: 'CP-2026-014 (GreenLoop) shows a 38 t gap between claimed and received quantities.', claimId: 'CP-2026-014', discrepancyId: 'disc-001', read: false, timestamp: '2026-10-07T08:00:00Z' },
+  { id: 'notif-002', type: 'missing_evidence', title: 'Missing evidence: CP-2026-014', body: 'Processing batch summary and chain of custody not submitted for GreenLoop claim.', claimId: 'CP-2026-014', discrepancyId: 'disc-002', read: false, timestamp: '2026-10-07T08:01:00Z' },
+  { id: 'notif-003', type: 'missing_evidence', title: 'Missing evidence: CP-2026-013', body: '3 documents outstanding for CircuitCycle Materials — review required.', claimId: 'CP-2026-013', discrepancyId: 'disc-003', read: false, timestamp: '2026-10-05T09:00:00Z' },
+  { id: 'notif-004', type: 'review_required', title: 'Claim awaiting assignment', body: 'CP-2026-014 has no assigned reviewer. It has open discrepancies requiring attention.', claimId: 'CP-2026-014', read: false, timestamp: '2026-10-07T09:00:00Z' },
+  { id: 'notif-005', type: 'review_required', title: 'Unreconciled loss flagged', body: 'EcoBoard Processing (CP-2026-015): 3 t gap between recovered and dispatched — quality rejection record needed.', claimId: 'CP-2026-015', discrepancyId: 'disc-004', read: true, timestamp: '2026-10-08T10:00:00Z' },
+  { id: 'notif-006', type: 'resolved', title: 'Discrepancy resolved: CP-2026-016', body: 'MetalSync calibration issue verified and closed. Claim reconciled.', claimId: 'CP-2026-016', discrepancyId: 'disc-005', read: true, timestamp: '2026-09-30T08:55:00Z' },
+  { id: 'notif-007', type: 'overdue', title: 'Overdue: CP-2026-014 unreviewed 4 days', body: 'GreenLoop claim CP-2026-014 has been in Needs Review status since 2026-10-03 with no assigned reviewer.', claimId: 'CP-2026-014', read: false, timestamp: '2026-10-08T00:00:00Z' },
+];
+
+// ─── Default Preferences ──────────────────────────────────────────────────────
+
+export const DEFAULT_PREFERENCES: UserPreferences = {
+  theme: 'light',
+  unit: 'tonnes',
+  dateFormat: 'DD MMM YYYY',
+  showPctInDiscrepancies: true,
+  discrepancyTolerancePct: 5,
+  notifyDiscrepancies: true,
+  notifyMissingEvidence: true,
+  notifyOverdue: true,
+  onboardingCompleted: false,
+  onboardingStep: 0,
+};
+
+// ─── Full initial state ───────────────────────────────────────────────────────
+
+export const INITIAL_APP_STATE: AppState = {
+  claims: INITIAL_CLAIMS,
+  organizations: INITIAL_ORGS,
+  evidence: INITIAL_EVIDENCE,
+  discrepancies: INITIAL_DISCREPANCIES,
+  timeline: INITIAL_TIMELINE,
+  notifications: INITIAL_NOTIFICATIONS,
+  preferences: DEFAULT_PREFERENCES,
+};
+
