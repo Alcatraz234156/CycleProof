@@ -33,6 +33,11 @@ export const Settings: React.FC<SettingsProps> = ({
     showFeedback(`Unit changed to ${unit}.`);
   };
 
+  const handleThemeChange = (theme: UserPreferences['theme']) => {
+    updatePreferences({ theme });
+    showFeedback(`Theme switched to ${theme === 'dark' ? 'Dark mode' : 'Light glass'}.`);
+  };
+
   const handleDateFormatChange = (dateFormat: UserPreferences['dateFormat']) => {
     updatePreferences({ dateFormat });
     showFeedback(`Date format updated to ${dateFormat}.`);
@@ -78,9 +83,18 @@ export const Settings: React.FC<SettingsProps> = ({
               <div className="cp-settings-label">Color Theme</div>
               <div className="cp-settings-desc">Choose between liquid glass light aesthetic and dark mode</div>
             </div>
-            <div style={{ display: 'flex', gap: '.5rem', alignItems: 'center' }}>
-              <span className="cp-status active">Light Glass (Active)</span>
-              <span className="cp-status" style={{ opacity: .5 }}>Dark (Coming soon)</span>
+            <div className="cp-radio-group">
+              {(['light', 'dark'] as const).map((theme) => (
+                <label key={theme} className="cp-radio-option">
+                  <input
+                    type="radio"
+                    name="theme"
+                    checked={preferences.theme === theme}
+                    onChange={() => handleThemeChange(theme)}
+                  />
+                  {theme === 'light' ? 'Light Glass' : 'Dark'}
+                </label>
+              ))}
             </div>
           </div>
 

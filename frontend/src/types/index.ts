@@ -129,7 +129,7 @@ export interface CsvImportRow {
 
 // App-level preferences stored in localStorage
 export interface UserPreferences {
-  theme: 'light' | 'dark'; // future-proofed; only light implemented
+  theme: 'light' | 'dark';
   unit: 'tonnes' | 'kg';
   dateFormat: 'DD MMM YYYY' | 'YYYY-MM-DD' | 'MM/DD/YYYY';
   showPctInDiscrepancies: boolean;

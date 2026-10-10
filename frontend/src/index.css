@@ -1,7 +1,9 @@
 /* Shift Cool: liquid glass over soft light. One signal color follows the heat risk. */
 :root{--display:'Big Shoulders Display Variable','Arial Narrow',sans-serif;--body:'Hanken Grotesk Variable',system-ui,-apple-system,'Segoe UI',sans-serif;
 --bg:#e8f0ef;--ink:#0c2b33;--muted:#4f6b72;--line:rgba(12,43,51,.1);--sun:#ffb627;--water:#2a6fdb;--risk:#e5502b;
---ease:cubic-bezier(.2,.8,.2,1);--spring:cubic-bezier(.3,1.25,.5,1)}
+--glass-1:rgba(255,255,255,.46);--glass-2:rgba(255,255,255,.16);--glass-border:rgba(255,255,255,.55);--glass-shadow:rgba(12,43,51,.22);--panel-1:rgba(255,255,255,.54);--panel-2:rgba(255,255,255,.2);--table-hover:rgba(255,255,255,.48);--panel-border:rgba(255,255,255,.68);--ease:cubic-bezier(.2,.8,.2,1);--spring:cubic-bezier(.3,1.25,.5,1)}
+.cycleproof[data-theme='dark']{--bg:#071b22;--ink:#ebf5ff;--muted:#95a8b3;--line:rgba(173,204,222,.12);--sun:#f7c75d;--water:#7ab5ff;--risk:#ff8d5c;
+--glass-1:rgba(13,22,30,.72);--glass-2:rgba(22,34,42,.58);--glass-border:rgba(163,190,216,.14);--glass-shadow:rgba(4,10,14,.56);--panel-1:rgba(14,22,29,.74);--panel-2:rgba(19,31,39,.56);--table-hover:rgba(17,28,35,.7);--panel-border:rgba(163,190,216,.12);color-scheme:dark}
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{font-family:var(--body);background:var(--bg);color:var(--ink);line-height:1.55;-webkit-font-smoothing:antialiased}
@@ -9,7 +11,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 input{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--water);outline-offset:3px;border-radius:8px}
 .num{font-variant-numeric:tabular-nums}
-.app{position:relative;isolation:isolate;min-height:100vh}
+.app{position:relative;isolation:isolate;min-height:100vh;background:var(--bg);color:var(--ink)}
 .wrap{max-width:1160px;margin:0 auto;padding:0 clamp(1.25rem,4vw,3rem)}
 
 /* ambient light the glass refracts */
@@ -19,15 +21,22 @@ input{font:inherit;color:inherit}
 .ambient i:nth-child(2){width:38vmax;height:38vmax;right:-10vmax;top:6vh;background:var(--risk);opacity:.34;animation-duration:34s}
 .ambient i:nth-child(3){width:44vmax;height:44vmax;left:22vw;bottom:-24vmax;background:#9dbcff;opacity:.7;animation-duration:40s}
 @keyframes drift{to{transform:translate3d(7vmax,5vmax,0) scale(1.14)}}
+.cycleproof[data-theme='dark'] .tabs,.cycleproof[data-theme='dark'] .seg{background:rgba(12,20,26,.7)}
+.cycleproof[data-theme='dark'] .tabs__ind,.cycleproof[data-theme='dark'] .seg__ind{background:linear-gradient(180deg,rgba(18,31,39,.9),rgba(15,23,30,.7));box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 6px 18px -12px rgba(2,8,12,.9)}
+.cycleproof[data-theme='dark'] .cp-panel,.cycleproof[data-theme='dark'] .cp-settings-section,.cycleproof[data-theme='dark'] .cp-metric{background:linear-gradient(145deg,var(--panel-1),var(--panel-2));border-color:var(--panel-border)}
+.cycleproof[data-theme='dark'] .cp-table tbody tr:hover,.cycleproof[data-theme='dark'] .cp-table tbody tr.is-selected{background:var(--table-hover)}
+.cycleproof[data-theme='dark'] .cp-table td{border-bottom-color:var(--line)}
+.cycleproof[data-theme='dark'] .cp-toggle{background:rgba(148,169,184,.15)}
+.cycleproof[data-theme='dark'] .cp-radio-option input,.cycleproof[data-theme='dark'] .cp-radio-option{accent-color:var(--water)}
 
 /* the glass material */
 .top,.glass,.badge,.readings,.facts,.alerts li,.st,.field,.chips button,.map,.col__well,.leaflet-bar a{
-  background:linear-gradient(145deg,rgba(255,255,255,.46),rgba(255,255,255,.16));
+  background:linear-gradient(145deg,var(--glass-1),var(--glass-2));
   -webkit-backdrop-filter:blur(26px) saturate(190%);backdrop-filter:blur(26px) saturate(190%);
-  border:1px solid rgba(255,255,255,.55);
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.95),inset 0 -1px 0 rgba(255,255,255,.3),0 10px 32px -12px rgba(12,43,51,.22),0 1px 2px rgba(12,43,51,.05)}
+  border:1px solid var(--glass-border);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.2),inset 0 -1px 0 rgba(255,255,255,.08),0 10px 32px -12px var(--glass-shadow),0 1px 2px rgba(12,43,51,.08)}
 @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-  .top,.glass,.badge,.readings,.facts,.alerts li,.st,.field,.chips button,.map,.col__well,.leaflet-bar a{background:rgba(255,255,255,.85)}}
+  .top,.glass,.badge,.readings,.facts,.alerts li,.st,.field,.chips button,.map,.col__well,.leaflet-bar a{background:rgba(14,22,29,.8)}}
 
 /* stage-in for each view */
 main>section>*{animation:rise .9s var(--ease) both}

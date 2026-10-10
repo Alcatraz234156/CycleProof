@@ -79,7 +79,7 @@ export const App: React.FC = () => {
   }, []);
 
   return (
-    <div className="app cycleproof">
+    <div className="app cycleproof" data-theme={state.preferences.theme}>
       {/* Ambient background light orbs */}
       <div className="ambient" aria-hidden="true">
         <i />
