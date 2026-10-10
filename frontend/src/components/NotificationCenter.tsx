@@ -77,19 +77,18 @@ export const NotificationCenter: React.FC<NotificationCenterProps> = ({
     onClose();
   };
 
-  if (!open) return null;
-
   return (
     <>
       <div
-        className="cp-notif-backdrop"
+        className={`cp-notif-backdrop ${open ? 'is-open' : ''}`}
         onClick={onClose}
-        aria-hidden="true"
+        aria-hidden={!open}
       />
       <aside
         className={`cp-notif-panel ${open ? 'is-open' : ''}`}
         role="dialog"
         aria-label="Notifications Center"
+        aria-hidden={!open}
       >
         <div className="cp-notif-header">
           <h3>Notifications ({unreadCount} unread)</h3>

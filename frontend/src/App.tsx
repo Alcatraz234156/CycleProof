@@ -85,6 +85,8 @@ export const App: React.FC = () => {
         <i />
         <i />
         <i />
+        <i />
+        <i />
       </div>
 
       <div className="wrap">
@@ -94,6 +96,12 @@ export const App: React.FC = () => {
           onChange={handleTabChange}
           unreadCount={unreadCount}
           onBellClick={() => setNotifOpen(true)}
+          theme={state.preferences.theme}
+          onToggleTheme={() =>
+            updatePreferences({
+              theme: state.preferences.theme === 'dark' ? 'light' : 'dark',
+            })
+          }
         />
 
         {/* Main Content Area */}
