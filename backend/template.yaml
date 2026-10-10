@@ -1,0 +1,120 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: CoolShift heat-safety and drinking-water backend
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Timeout: 30
+    MemorySize: 512
+    Environment:
+      Variables:
+        REPORTS_TABLE_NAME: !Ref WaterPointReportsTable
+        DATA_BUCKET_NAME: !Ref CoolShiftDataBucket
+        ENABLE_AI_EXPLANATION: 'false'
+        BEDROCK_MODEL_ID: amazon.nova-lite-v1:0
+  Api:
+    Cors:
+      AllowMethods: "'GET,POST,OPTIONS'"
+      AllowHeaders: "'Content-Type,Authorization'"
+      AllowOrigin: "'*'"
+
+Resources:
+  CoolShiftApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+
+  CoolShiftFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: app.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref WaterPointReportsTable
+        - S3ReadPolicy:
+            BucketName: !Ref CoolShiftDataBucket
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+              Resource: '*'
+      Events:
+        Health:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CoolShiftApi
+            Path: /health
+            Method: get
+        Weather:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CoolShiftApi
+            Path: /weather
+            Method: get
+        ShiftPlan:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CoolShiftApi
+            Path: /shift-plan
+            Method: post
+        Explain:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CoolShiftApi
+            Path: /explain
+            Method: post
+        WaterPoints:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CoolShiftApi
+            Path: /water-points
+            Method: get
+        WaterPointReport:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CoolShiftApi
+            Path: /water-points/{point_id}/reports
+            Method: post
+
+  WaterPointReportsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: point_id
+          AttributeType: S
+        - AttributeName: report_id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: point_id
+          KeyType: HASH
+        - AttributeName: report_id
+          KeyType: RANGE
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+
+  CoolShiftDataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+
+Outputs:
+  ApiUrl:
+    Description: CoolShift API base URL
+    Value: !Sub https://${CoolShiftApi}.execute-api.${AWS::Region}.amazonaws.com/prod
+  ReportsTableName:
+    Value: !Ref WaterPointReportsTable
+  DataBucketName:
+    Value: !Ref CoolShiftDataBucket
