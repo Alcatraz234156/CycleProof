@@ -2,26 +2,24 @@
 
 # ☀️ ShiftCool
 
-### Heat-safety intelligence and drinking-water assistance for outdoor workers
+### Heat-safety guidance and drinking-water information for outdoor workers
 
-<p>
-  <strong>Understand the heat. Plan the shift. Find water nearby.</strong>
-</p>
+**Understand the heat. Plan the shift. Find water nearby.**
 
 <a href="https://github.com/Alcatraz234156/SHIFTCOOL"><img src="https://img.shields.io/badge/project-ShiftCool-ff4d2e?style=for-the-badge" alt="ShiftCool project"></a>
 <img src="https://img.shields.io/badge/frontend-React%20%2B%20TypeScript-22d3c5?style=for-the-badge" alt="React and TypeScript">
 <img src="https://img.shields.io/badge/backend-Python%20%2B%20AWS%20SAM-ffb000?style=for-the-badge" alt="Python and AWS SAM">
-<a href="LICENSE"><img src="https://img.shields.io/badge/license-see%20LICENSE-161513?style=for-the-badge" alt="License"></a>
+<a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-161513?style=for-the-badge" alt="MIT License"></a>
 
 <br>
 
-<a href="#-quick-start">Quick start</a>
-&nbsp;&nbsp;•&nbsp;&nbsp;
-<a href="#-architecture">Architecture</a>
-&nbsp;&nbsp;•&nbsp;&nbsp;
-<a href="#-api-reference">API reference</a>
-&nbsp;&nbsp;•&nbsp;&nbsp;
-<a href="#-deployment">Deployment</a>
+<a href="#get-started">Get started</a>
+&nbsp;&nbsp;·&nbsp;&nbsp;
+<a href="#how-it-works">How it works</a>
+&nbsp;&nbsp;·&nbsp;&nbsp;
+<a href="#api-reference">API</a>
+&nbsp;&nbsp;·&nbsp;&nbsp;
+<a href="#deploy-to-aws">Deploy</a>
 
 </div>
 
@@ -29,232 +27,111 @@
 
 > **Built for Environmental Hacks · Track 2: Heat and Water**
 
-ShiftCool combines location-based weather screening, deterministic heat-risk calculations, shift-planning guidance, and nearby drinking-water discovery in one React application. The backend is designed for AWS Lambda and API Gateway, with DynamoDB storing community water-point reports.
+ShiftCool brings a heat-risk dashboard, shift-planning interface, and nearby drinking-water map together in one prototype. Its Python API provides hourly forecasts, transparent heat-risk calculations, and community water-point reports.
 
-> **Safety notice:** ShiftCool is decision-support software, not a medical, occupational-health, or emergency-response system. Its heat indicator is not WBGT and does not guarantee safe working conditions. Follow local guidance, employer procedures, supervisor instructions, and emergency protocols.
+> **Prototype status:** The dashboard currently uses bundled sample data. The backend API is implemented separately; the dashboard views are not yet connected to it.
 
-## ✨ What it does
+## At a glance
 
-| 🌡️ Heat screening | 🗓️ Shift planning | 💧 Water intelligence |
+| Heat screening | Shift planning | Water discovery |
 | --- | --- | --- |
-| Fetches local hourly forecasts and calculates a transparent apparent-temperature risk indicator. | Converts forecast risk into practical work, rest, hydration, and caution guidance. | Finds mapped drinking-water points and lets workers report whether they are currently usable. |
+| Review hourly conditions and a humidity-adjusted screening indicator. | Explore sample work/rest guidance, with backend recommendations available through the API. | Browse sample map locations; the API can search OpenStreetMap for mapped drinking-water points. |
 
-### Core capabilities
+### What’s in the project
 
-- Retrieves an hourly forecast from Open-Meteo for the user's location.
-- Calculates an apparent-temperature heat-risk indicator in Python.
-- Generates structured shift recommendations with deterministic rules.
-- Finds mapped drinking-water points using OpenStreetMap/Overpass.
-- Lets users report whether a water point is working.
-- Stores report timestamps and status history in DynamoDB.
-- Optionally explains a generated shift plan with Strands Agents SDK and Amazon Bedrock.
-- Falls back to the frontend's demo data when location permission or the backend is unavailable.
+- **Interactive React dashboard** with heat, shift-planning, and water-map views.
+- **Python API on AWS Lambda** for Open-Meteo forecasts, deterministic risk records, shift recommendations, and water-point reports.
+- **OpenStreetMap / Overpass lookup** for mapped drinking-water locations.
+- **DynamoDB report storage** for community status updates.
+- **Optional Strands and Amazon Bedrock explanations**, disabled by default.
 
-## 🚀 Quick start
+## How it works
 
-### 1. Configure the frontend
-
-```powershell
-cd frontend
-npm install
-Copy-Item .env.example .env.local
-```
-
-Set the API Gateway URL in `frontend/.env.local`:
-
-```env
-VITE_API_BASE_URL=https://YOUR_API_ID.execute-api.YOUR_REGION.amazonaws.com/prod
-```
-
-Start the app:
-
-```powershell
-npm run dev
-```
-
-Open the URL printed by Vite, normally `http://localhost:5173`.
-
-> **Tip:** If the API URL or browser location is unavailable, the UI keeps its demo data visible and shows an explanatory message.
-
-## 🧭 Architecture
+The API turns a location into forecast records and a transparent risk summary. It can also look up mapped water points and combine them with saved community reports.
 
 ```mermaid
 flowchart LR
-    Browser[React + TypeScript] --> API[API Gateway]
-    API --> Lambda[AWS Lambda / Python]
-    Lambda --> Risk[Heat-risk calculations]
+    Client[API client] --> Gateway[Amazon API Gateway]
+    Gateway --> Lambda[AWS Lambda · Python]
+    Lambda --> Risk[Heat-risk and shift-plan logic]
     Lambda --> Weather[Open-Meteo]
-    Lambda --> Water[Overpass API]
-    Lambda --> DynamoDB[(DynamoDB reports)]
-    Lambda -. optional .-> Agent[Strands Agent + Bedrock]
-    Browser --> Map[Leaflet map]
-    Browser --> Amplify[AWS Amplify Hosting]
+    Lambda --> Water[OpenStreetMap / Overpass]
+    Lambda --> Reports[(Amazon DynamoDB)]
+    Lambda -. optional explanation .-> Bedrock[Strands + Amazon Bedrock]
 ```
 
-### AWS services
+The repository also includes a React dashboard with sample fixtures. Its current views are not wired to the API client yet.
 
-| Service | Use |
-| --- | --- |
-| AWS SAM | Infrastructure definition, local build, validation, and deployment |
-| AWS Lambda | Python API handler |
-| API Gateway | Public HTTP API |
-| DynamoDB | Water-point report storage |
-| S3 | Provisioned for future static data or assets |
-| Amplify Hosting | Frontend hosting |
-| Strands Agents + Bedrock | Optional natural-language explanations |
-| EventBridge / SNS | Optional future refreshes and notifications |
+## Get started
 
-## 🎯 Product flow
+### Run the dashboard
 
-```text
-Choose location
-      ↓
-Fetch hourly forecast
-      ↓
-Calculate transparent heat-risk indicators
-      ↓
-Generate shift guidance
-      ↓
-Find nearby water points
-      ↓
-Report status and improve community confidence
-```
-
-## 🗂️ Repository layout
-
-```text
-SHIFTCOOL/
-├── backend/
-│   ├── src/
-│   │   ├── app.py              # Lambda routes and external integrations
-│   │   ├── heat_risk.py        # Deterministic risk calculations
-│   │   └── ai_explanation.py   # Optional Strands/Bedrock explanation
-│   ├── tests/
-│   ├── requirements.txt
-│   └── template.yaml           # SAM resources and API routes
-├── frontend/
-│   ├── src/
-│   │   ├── components/         # Dashboard views
-│   │   ├── services/           # API client and frontend helpers
-│   │   └── types/              # TypeScript domain types
-│   ├── .env.example
-│   └── package.json
-└── README.md
-```
-
-## 🧰 Prerequisites
-
-- Node.js 18 or newer
-- Python 3.12
-- AWS CLI configured with credentials
-- AWS SAM CLI
-- An AWS account with permission to create Lambda, API Gateway, DynamoDB, S3, and IAM resources
-
-## 💻 Run the frontend locally
+Requirements: Node.js 18 or newer and npm.
 
 ```powershell
 cd frontend
 npm install
-Copy-Item .env.example .env.local
-```
-
-Set the API Gateway URL in `frontend/.env.local`:
-
-```env
-VITE_API_BASE_URL=https://YOUR_API_ID.execute-api.YOUR_REGION.amazonaws.com/prod
-```
-
-Start the Vite development server:
-
-```powershell
 npm run dev
 ```
 
-Open the URL printed by Vite, normally `http://localhost:5173`.
+Open the local URL printed by Vite, usually `http://localhost:5173`. The dashboard loads its bundled sample data without an API configuration.
 
-Build the frontend:
+To build the frontend:
 
 ```powershell
 npm run build
 ```
 
-The production files are generated in `frontend/dist/`.
+The production bundle is written to `frontend/dist/`.
 
-## 🧪 Run and test the backend
+### Build and run the API locally
 
-Create a virtual environment from the repository root:
+Requirements: Python 3.12, AWS CLI, and AWS SAM CLI.
 
 ```powershell
 cd backend
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
-```
-
-Validate and build with SAM:
-
-```powershell
 sam validate
 sam build
-```
-
-Start the local API:
-
-```powershell
 sam local start-api
 ```
 
-The local API normally runs at `http://127.0.0.1:3000`. To use it from the frontend, set:
+The local API is usually available at `http://127.0.0.1:3000`. Weather requests use Open-Meteo; water-point requests use Overpass and read report data from DynamoDB. DynamoDB-backed routes need access to a configured table.
 
-```env
-VITE_API_BASE_URL=http://127.0.0.1:3000
-```
-
-Run backend tests:
+The frontend API client reads `VITE_API_BASE_URL` from `frontend/.env.local`. To point it at a deployed API, create the local env file:
 
 ```powershell
-python -m pytest tests
+cd frontend
+Copy-Item .env.example .env.local
 ```
 
-If `pytest` is not installed, install the project's test dependencies first:
+Set `VITE_API_BASE_URL` in `.env.local` to the API Gateway URL. The dashboard views still use sample data until they are connected to that client.
 
-```powershell
-python -m pip install pytest
-```
-
-## ☁️ Deployment
+### Run backend unit tests
 
 From `backend/`:
 
 ```powershell
-sam build
-sam deploy --guided
+python -m pip install pytest
+python -m pytest tests
 ```
 
-The deployment creates the Lambda function, API Gateway routes, DynamoDB table, and S3 bucket defined in `template.yaml`. Save the `ApiUrl` output and use it as `VITE_API_BASE_URL` when building the frontend.
+## API reference
 
-For a later deployment without prompts:
+Successful responses are JSON. Errors use `{ "error": "message" }`.
 
-```powershell
-sam deploy
-```
-
-Do not commit generated SAM configuration files if they contain environment-specific or sensitive values.
-
-## 🔌 API reference
-
-All successful responses are JSON. Errors use the shape `{ "error": "message" }`.
-
-| Method | Route | Description |
+| Method | Route | Purpose |
 | --- | --- | --- |
-| `GET` | `/health` | Returns backend health status |
-| `GET` | `/weather?latitude={lat}&longitude={lon}` | Returns two days of hourly weather and risk records |
-| `POST` | `/shift-plan` | Generates recommendations from an `hourly_risk` array |
-| `POST` | `/explain` | Optionally explains a generated plan |
-| `GET` | `/water-points?latitude={lat}&longitude={lon}&radius_m={meters}` | Finds mapped drinking-water points |
-| `POST` | `/water-points/{point_id}/reports` | Stores a community status report |
+| `GET` | `/health` | Check API health. |
+| `GET` | `/weather?latitude={lat}&longitude={lon}` | Return two days of hourly forecast and risk records. |
+| `POST` | `/shift-plan` | Create recommendations from an `hourly_risk` array. |
+| `POST` | `/explain` | Explain a supplied plan when optional AI explanations are enabled. |
+| `GET` | `/water-points?latitude={lat}&longitude={lon}&radius_m={meters}` | Find mapped drinking-water points and report summaries. |
+| `POST` | `/water-points/{point_id}/reports` | Save a community status report. |
 
-### Generate a shift plan
+Example shift-plan request:
 
 ```json
 {
@@ -271,70 +148,73 @@ All successful responses are JSON. Errors use the shape `{ "error": "message" }`
 }
 ```
 
-### Submit a water-point report
+Water-report statuses are `Working`, `Dry / not working`, and `Unable to verify`.
 
-```json
-{
-  "status": "Working"
-}
-```
+## Heat-risk method
 
-Allowed statuses are `Working`, `Dry / not working`, and `Unable to verify`.
-
-## 🌡️ Heat-risk methodology
-
-The backend uses a transparent apparent-temperature approximation:
+The backend calculates a humidity-adjusted screening temperature:
 
 ```text
-apparent temperature =
-  air temperature + humidity factor × max(0, air temperature - 14°C) × 0.35
+apparent temperature = air temperature
+                     + (relative humidity / 100)
+                     × max(0, air temperature - 14°C)
+                     × 0.35
 ```
 
-Risk bands are:
-
-| Apparent temperature | Risk |
+| Apparent temperature | Screening band |
 | ---: | --- |
 | `< 27°C` | Lower |
 | `27–31.9°C` | Moderate |
 | `32–40.9°C` | High |
 | `≥ 41°C` | Very high |
 
-The calculation does not model direct solar radiation, clothing, exertion, acclimatization, shade, medical factors, or workplace controls. Numeric calculations remain in `backend/src/heat_risk.py`; the optional AI layer only explains already-calculated results.
+These bands are a decision-support indicator, **not WBGT**. The calculation does not account for solar radiation, wind exposure, clothing, exertion, acclimatization, shade, medical factors, or workplace controls. Follow local heat-safety guidance, employer procedures, supervisor instructions, and emergency protocols. A lower indicator does not guarantee safe working conditions.
 
-## 🤖 Optional AI explanations
+## Deploy to AWS
 
-AI explanations are disabled by default. To enable them in the deployed Lambda environment, configure:
+From `backend/`:
 
-```text
-ENABLE_AI_EXPLANATION=true
-BEDROCK_MODEL_ID=amazon.nova-lite-v1:0
+```powershell
+sam build
+sam deploy --guided
 ```
 
-This requires the Strands SDK in the Lambda package and permission to invoke the selected Bedrock model in the deployment region. Enable it only when permitted by the hackathon rules and after verifying AWS costs and regional availability.
+The SAM template defines the Lambda function, API Gateway routes, DynamoDB reports table, and an encrypted S3 bucket. After deployment, use the `ApiUrl` output as `VITE_API_BASE_URL` when configuring the frontend API client.
 
-## 🛡️ Data and responsible use
+AI explanations are disabled by default. To enable them, set `ENABLE_AI_EXPLANATION=true` for the Lambda and ensure the selected Bedrock model is available and permitted in your AWS region. Review AWS costs and hackathon rules before enabling it.
 
-- Open-Meteo forecasts are estimates and can change.
+## Repository layout
+
+```text
+SHIFTCOOL/
+├── backend/
+│   ├── src/
+│   │   ├── app.py              # Lambda routes and external integrations
+│   │   ├── heat_risk.py        # Deterministic risk calculations
+│   │   └── ai_explanation.py   # Optional Strands / Bedrock explanation
+│   ├── tests/
+│   ├── requirements.txt
+│   └── template.yaml           # SAM resources and API routes
+├── frontend/
+│   ├── src/
+│   │   ├── components/         # Dashboard views
+│   │   ├── services/           # Sample data and API client
+│   │   └── types/              # TypeScript domain types
+│   ├── .env.example
+│   └── package.json
+├── LICENSE
+└── README.md
+```
+
+## Data and responsible use
+
+- Forecasts are estimates and can change.
 - OpenStreetMap data may be incomplete, stale, inaccessible, or incorrectly tagged.
-- A mapped water point is not proof that the point is currently usable.
-- Community reports are displayed with status, freshness, count, and confidence information.
-- Overpass API usage must follow its service policy and rate limits.
-- Keep AWS IAM permissions least-privilege and monitor resource costs.
-- Never treat a lower risk indicator as a guarantee of safety.
+- A map point does not prove that drinking water is currently available.
+- Community reports can be uncertain or outdated; check freshness and confidence information.
+- Respect the Overpass API usage policy and rate limits.
+- ShiftCool is decision-support software, not a medical, occupational-health, or emergency-response system.
 
-## 📍 Current status
+## License
 
-- [x] React + TypeScript dashboard
-- [x] Frontend API client and backend integration
-- [x] SAM template with Lambda, API Gateway, DynamoDB, and S3
-- [x] Deterministic heat-risk and shift-plan logic
-- [x] Open-Meteo weather integration
-- [x] Overpass water-point integration
-- [x] Community water-point reporting
-- [ ] Production AWS deployment
-- [ ] Amplify Hosting deployment
-- [ ] Optional Strands/Bedrock explanation deployment
-
-## 📄 License
-
-See [LICENSE](LICENSE).
+This project is licensed under the [MIT License](LICENSE).
