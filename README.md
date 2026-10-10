@@ -1,393 +1,265 @@
-# ShiftCool 🌤️
+# ShiftCool
 
-### Heat-Safety Intelligence & Drinking-Water Assistance for Outdoor Workers
+**Heat-safety intelligence and drinking-water assistance for outdoor workers.**
 
-**Environmental Hacks Hackathon | Track 2: Heat and Water**
+ShiftCool combines location-based weather screening, deterministic heat-risk calculations, shift-planning guidance, and nearby drinking-water discovery in one React application. The backend is designed for AWS Lambda and API Gateway, with DynamoDB storing community water-point reports.
 
-ShiftCool is a heat-safety and drinking-water assistance platform designed for people who work outdoors in hot conditions. It combines hourly weather forecasts, transparent heat-risk screening, shift-planning guidance, and mapped public drinking-water points in one integrated workflow.
+> **Safety notice:** ShiftCool is decision-support software, not a medical, occupational-health, or emergency-response system. Its heat indicator is not WBGT and does not guarantee safe working conditions. Follow local guidance, employer procedures, supervisor instructions, and emergency protocols.
 
-Our goal is simple: **help outdoor workers make better-informed decisions about heat exposure and find drinking water when they need it.**
+## What it does
 
----
+- Retrieves an hourly forecast from Open-Meteo for the user's location.
+- Calculates an apparent-temperature heat-risk indicator in Python.
+- Generates structured shift recommendations with deterministic rules.
+- Finds mapped drinking-water points using OpenStreetMap/Overpass.
+- Lets users report whether a water point is working.
+- Stores report timestamps and status history in DynamoDB.
+- Optionally explains a generated shift plan with Strands Agents SDK and Amazon Bedrock.
+- Falls back to the frontend's demo data when location permission or the backend is unavailable.
 
-## The Problem
-
-Millions of people work outdoors in environments where heat exposure can become dangerous. Construction workers, delivery partners, traffic police officers, sanitation workers, and other outdoor workers may face prolonged heat exposure while having limited access to reliable information about nearby drinking-water facilities.
-
-Two challenges often occur together:
-
-- **Heat exposure:** Workers may lack accessible, location-specific information about changing weather conditions throughout their shifts.
-- **Water accessibility:** Public drinking-water points may be difficult to locate, and mapped facilities are not necessarily functional, accessible, or recently verified.
-
-Existing weather applications provide forecasts, but a forecast alone does not turn into a practical shift plan. Similarly, a map pin does not guarantee that a drinking-water point is working.
-
-ShiftCool connects these problems through a single, practical workflow.
-
-## Our Solution
-
-ShiftCool helps users assess upcoming heat conditions, plan their shifts more thoughtfully, and discover nearby public drinking-water points with transparent status information.
-
-### Core Features
-
-**1. Location-Based Heat Screening**
-
-- Retrieve hourly weather forecasts for a selected location.
-- Process available weather variables into documented heat-risk indicators.
-- Present hourly conditions and explain the limitations of the calculation.
-
-**2. Shift Planning**
-
-- Analyse the user's selected shift window.
-- Highlight potentially lower-risk periods where supported by the available data.
-- Provide precautionary guidance on rest, hydration, and following workplace heat-safety procedures.
-- Clearly distinguish decision-support recommendations from guarantees of safety.
-
-**3. Public Drinking-Water Map**
-
-- Discover mapped drinking-water points using OpenStreetMap data.
-- Display available descriptions, locations, distances, and report freshness.
-- Distinguish mapped locations from recently reported or corroborated locations.
-
-**4. Community-Powered Status Reports**
-Users can report a water point as:
-
-- **Working**
-- **Dry / not working**
-- **Unable to verify**
-
-Reports are stored by the backend and used to update the water-point information shown to subsequent users.
-
-**5. Transparent Trust and Freshness**
-
-- Display the time of the latest report.
-- Account for report recency and agreement when presenting confidence.
-- Avoid treating a single unverified report as definitive proof that a facility works or does not work.
-
-**6. AI-Assisted Explanations — Planned**
-Where available and permitted, an AI agent built with Strands Agents SDK and Amazon Bedrock may explain calculated risk indicators and summarise a shift plan. Numerical calculations and safety rules remain in deterministic application code.
-
----
-
-## How It Works
-
-1. **Choose a work location:** Select a location, shift start and end times, and optionally the type or intensity of work.
-2. **Retrieve the forecast:** Fetch hourly weather data from Open-Meteo.
-3. **Calculate heat indicators:** Process available data using a documented method and display its limitations.
-4. **Generate a shift plan:** Present precautionary recommendations based on the calculated indicators and selected shift.
-5. **Find drinking water:** Explore nearby mapped public drinking-water points.
-6. **Report a status:** Submit a report about a facility's current condition.
-7. **Update the map:** Save the report through the AWS backend and reflect the latest available status.
-
-### The Main Demonstration
-
-A worker checks the heat conditions for an upcoming shift, receives precautionary guidance, finds a nearby drinking-water point, reports that it is unavailable, and sees the updated status in the application.
-
-This end-to-end interaction is the central feature of ShiftCool.
-
----
-
-## System Architecture
+## Architecture
 
 ```mermaid
-flowchart TD
-    U[Outdoor Worker] --> FE[React + TypeScript Frontend]
-
-    FE --> API[Amazon API Gateway]
-    FE --> WX[Open-Meteo API]
-    FE --> MAP[OpenStreetMap / Overpass API]
-
-    API --> L[AWS Lambda - Python]
-    L --> H[Heat-Risk Calculation]
-    L --> SP[Shift-Plan Generation]
-    L --> WP[Water-Point Report Processing]
-
-    WP --> DB[(Amazon DynamoDB)]
-    DB --> L
-    L --> API
-    API --> FE
-
-    FE --> HOST[AWS Amplify Hosting]
-
-    L -. Optional explanations .-> AG[Strands Agents SDK]
-    AG -. If permitted and available .-> BR[Amazon Bedrock]
+flowchart LR
+    Browser[React + TypeScript] --> API[API Gateway]
+    API --> Lambda[AWS Lambda / Python]
+    Lambda --> Risk[Heat-risk calculations]
+    Lambda --> Weather[Open-Meteo]
+    Lambda --> Water[Overpass API]
+    Lambda --> DynamoDB[(DynamoDB reports)]
+    Lambda -. optional .-> Agent[Strands Agent + Bedrock]
+    Browser --> Map[Leaflet map]
+    Browser --> Amplify[AWS Amplify Hosting]
 ```
 
-### AWS Services
+### AWS services
 
-| Service                 | Purpose                                                                        |
-| ----------------------- | ------------------------------------------------------------------------------ |
-| **AWS SAM CLI**         | Define, build, test, and deploy the serverless backend.                        |
-| **AWS Lambda**          | Execute Python backend logic without managing servers.                         |
-| **Amazon API Gateway**  | Expose HTTP endpoints to the frontend.                                         |
-| **Amazon DynamoDB**     | Persist water-point reports, timestamps, and status information.               |
-| **AWS Amplify Hosting** | Host the React web application.                                                |
-| **Amazon S3**           | Optional storage for static datasets or files if needed.                       |
-| **Amazon EventBridge**  | Optional scheduled data refreshes in a later phase.                            |
-| **Amazon SNS**          | Optional notifications if time and requirements permit.                        |
-| **Amazon Bedrock**      | Optional AI-powered explanations, subject to availability and hackathon rules. |
+| Service | Use |
+| --- | --- |
+| AWS SAM | Infrastructure definition, local build, validation, and deployment |
+| AWS Lambda | Python API handler |
+| API Gateway | Public HTTP API |
+| DynamoDB | Water-point report storage |
+| S3 | Provisioned for future static data or assets |
+| Amplify Hosting | Frontend hosting |
+| Strands Agents + Bedrock | Optional natural-language explanations |
+| EventBridge / SNS | Optional future refreshes and notifications |
 
-AWS services will be described as integrated only after they have actually been configured and tested.
-
----
-
-## Technology Stack
-
-### Frontend
-
-- React
-- TypeScript
-- Vite
-- Leaflet for interactive maps
-
-### Backend
-
-- Python
-- AWS Lambda
-- Amazon API Gateway
-- Amazon DynamoDB
-- AWS Serverless Application Model (SAM)
-
-### External Data Sources
-
-- **Open-Meteo:** Hourly weather forecast data.
-- **OpenStreetMap / Overpass API:** Mapped public drinking-water locations.
-
-### Optional AI Layer
-
-- Strands Agents SDK
-- Amazon Bedrock
-
-The application is designed around a lightweight serverless architecture to keep infrastructure management and operational complexity low.
-
----
-
-## Heat-Safety Methodology
-
-Heat safety is more complex than air temperature alone. Humidity, solar radiation, wind, physical exertion, clothing, acclimatization, and workplace conditions can substantially affect heat stress.
-
-ShiftCool is designed to provide **decision-support information, not a definitive occupational heat-stress assessment**.
-
-Our implementation will:
-
-- Document the selected heat-risk method and its source.
-- State which environmental variables are used and which are unavailable.
-- Keep numerical calculations and thresholds in deterministic code.
-- Clearly identify limitations when direct sunlight, workload, clothing, or other important factors are not measured.
-- Encourage appropriate workplace controls, supervision, official warnings, and emergency procedures.
-
-A lower displayed risk indicator must never be interpreted as a guarantee that working conditions are safe. ShiftCool does not replace occupational-health guidance or emergency response.
-
----
-
-## Water-Point Trust Model
-
-Mapped locations provide a starting point, not proof of current availability.
-
-ShiftCool separates:
-
-- **Mapped:** A drinking-water location exists in the underlying map data.
-- **Reported:** A user has submitted a status report.
-- **Recently corroborated:** Recent reports provide supporting evidence about the reported status.
-- **Unknown or stale:** The available information is insufficient or outdated.
-
-Each point is intended to have a stable identifier, coordinates, available descriptive information, report history or summary, and the timestamp of its latest report.
-
-Confidence will be based on a transparent rule using report freshness, report count, and agreement between reports. The application will avoid presenting uncertain information as verified fact.
-
----
-
-## Repository Structure
+## Repository layout
 
 ```text
-shiftcool/
+SHIFTCOOL/
+├── backend/
+│   ├── src/
+│   │   ├── app.py              # Lambda routes and external integrations
+│   │   ├── heat_risk.py        # Deterministic risk calculations
+│   │   └── ai_explanation.py   # Optional Strands/Bedrock explanation
+│   ├── tests/
+│   ├── requirements.txt
+│   └── template.yaml           # SAM resources and API routes
 ├── frontend/
 │   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── services/
-│   │   └── types/
+│   │   ├── components/         # Dashboard views
+│   │   ├── services/           # API client and frontend helpers
+│   │   └── types/              # TypeScript domain types
+│   ├── .env.example
 │   └── package.json
-│
-├── backend/
-│   ├── template.yaml
-│   ├── requirements.txt
-│   ├── src/
-│   │   ├── app.py
-│   │   ├── weather.py
-│   │   ├── heat_risk.py
-│   │   ├── shift_plan.py
-│   │   ├── water_points.py
-│   │   └── storage.py
-│   └── tests/
-│
-├── docs/
-│   ├── api-contract.md
-│   └── heat-methodology.md
-│
-├── README.md
-└── .gitignore
+└── README.md
 ```
 
-The final structure may evolve as implementation progresses.
+## Prerequisites
 
----
-
-## Local Development
-
-### Prerequisites
-
-- Node.js and npm
-- Python 3.12 or a Python version supported by the selected AWS Lambda runtime
-- AWS CLI
+- Node.js 18 or newer
+- Python 3.12
+- AWS CLI configured with credentials
 - AWS SAM CLI
-- An AWS account with the necessary permissions for deployment
+- An AWS account with permission to create Lambda, API Gateway, DynamoDB, S3, and IAM resources
 
-### 1. Clone the Repository
+## Run the frontend locally
 
-```bash
-git clone <YOUR_REPOSITORY_URL>
-cd shiftcool
-```
-
-### 2. Run the Frontend
-
-Once the frontend has been configured:
-
-```bash
+```powershell
 cd frontend
 npm install
+Copy-Item .env.example .env.local
+```
+
+Set the API Gateway URL in `frontend/.env.local`:
+
+```env
+VITE_API_BASE_URL=https://YOUR_API_ID.execute-api.YOUR_REGION.amazonaws.com/prod
+```
+
+Start the Vite development server:
+
+```powershell
 npm run dev
 ```
 
-Vite will print the local development URL in your terminal.
+Open the URL printed by Vite, normally `http://localhost:5173`.
 
-### 3. Set Up the Backend
-
-From the repository root:
-
-```bash
-cd backend
-python -m venv .venv
-```
-
-Activate the virtual environment.
-
-**Windows PowerShell:**
+Build the frontend:
 
 ```powershell
-.venv\Scripts\Activate.ps1
+npm run build
 ```
 
-**Linux / macOS:**
+The production files are generated in `frontend/dist/`.
 
-```bash
-source .venv/bin/activate
-```
+## Run and test the backend
 
-Install the backend dependencies after `requirements.txt` has been configured:
+Create a virtual environment from the repository root:
 
-```bash
+```powershell
+cd backend
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 ```
 
-### 4. Test and Build with SAM
+Validate and build with SAM:
 
-Once the SAM template and Lambda handlers are implemented:
-
-```bash
+```powershell
 sam validate
 sam build
 ```
 
-Run the local API after configuring the template and local environment:
+Start the local API:
 
-```bash
+```powershell
 sam local start-api
 ```
 
-AWS credentials and configuration will be required for deployment and access to deployed AWS resources.
+The local API normally runs at `http://127.0.0.1:3000`. To use it from the frontend, set:
 
-> These commands describe the intended development workflow. They do not imply that the backend has already been built or deployed.
+```env
+VITE_API_BASE_URL=http://127.0.0.1:3000
+```
 
----
+Run backend tests:
 
-## API Design
+```powershell
+python -m pytest tests
+```
 
-The planned HTTP API includes:
+If `pytest` is not installed, install the project's test dependencies first:
 
-| Method | Endpoint                     | Purpose                                                  |
-| ------ | ---------------------------- | -------------------------------------------------------- |
-| `GET`  | `/health`                    | Check backend availability.                              |
-| `GET`  | `/weather`                   | Retrieve hourly forecast data for a location.            |
-| `POST` | `/shift-plan`                | Generate heat indicators and shift recommendations.      |
-| `GET`  | `/water-points`              | Retrieve mapped points and available report information. |
-| `POST` | `/water-points/{id}/reports` | Submit a water-point status report.                      |
+```powershell
+python -m pip install pytest
+```
 
-The exact request and response schemas will be documented in `docs/api-contract.md` and kept consistent between frontend and backend.
+## Deploy the backend
 
----
+From `backend/`:
 
-## Environmental and Social Impact
+```powershell
+sam build
+sam deploy --guided
+```
 
-ShiftCool aims to make heat-safety information and drinking-water availability easier to access for people who work outdoors.
+The deployment creates the Lambda function, API Gateway routes, DynamoDB table, and S3 bucket defined in `template.yaml`. Save the `ApiUrl` output and use it as `VITE_API_BASE_URL` when building the frontend.
 
-Potential impact indicators include:
+For a later deployment without prompts:
 
-- Number of mapped drinking-water points displayed.
-- Number and age of recent status reports.
-- Distance to the nearest recently corroborated water point.
-- Number of shifts for which the system generates a plan.
-- Potential work periods identified for additional precautions or adjustment.
+```powershell
+sam deploy
+```
 
-These indicators measure system activity and potential usefulness; they do not, by themselves, prove that heat illness has been prevented or that working conditions have improved.
+Do not commit generated SAM configuration files if they contain environment-specific or sensitive values.
 
-Any demonstration data will be identified as simulated. Measured outcomes will be reported separately from estimates.
+## API reference
 
----
+All successful responses are JSON. Errors use the shape `{ "error": "message" }`.
 
-## Responsible Data Usage
+| Method | Route | Description |
+| --- | --- | --- |
+| `GET` | `/health` | Returns backend health status |
+| `GET` | `/weather?latitude={lat}&longitude={lon}` | Returns two days of hourly weather and risk records |
+| `POST` | `/shift-plan` | Generates recommendations from an `hourly_risk` array |
+| `POST` | `/explain` | Optionally explains a generated plan |
+| `GET` | `/water-points?latitude={lat}&longitude={lon}&radius_m={meters}` | Finds mapped drinking-water points |
+| `POST` | `/water-points/{point_id}/reports` | Stores a community status report |
 
-ShiftCool depends on external data providers and community reports.
+### Generate a shift plan
 
-- Weather forecasts are estimates and may change.
-- OpenStreetMap locations may be incomplete, outdated, inaccessible, or incorrectly tagged.
-- Overpass API availability and usage policies must be respected.
-- Report freshness and uncertainty will be shown where relevant.
-- User-submitted reports will be validated before storage.
-- API permissions will follow least-privilege principles.
-- AWS resource usage and costs will be monitored during development and deployment.
+```json
+{
+  "hourly_risk": [
+    {
+      "time": "2026-10-10T12:00",
+      "temperature_c": 36.2,
+      "relative_humidity": 58,
+      "wind_speed_kmh": 11,
+      "apparent_temperature_c": 41.0,
+      "risk_level": "very_high"
+    }
+  ]
+}
+```
 
----
+### Submit a water-point report
 
-## Development Roadmap
+```json
+{
+  "status": "Working"
+}
+```
 
-- [x] Build the React + TypeScript application.
-- [x] Integrate Open-Meteo hourly forecasts.
-- [x] Implement and test the documented heat-risk method.
-- [x] Generate structured shift-plan recommendations.
-- [x] Integrate Leaflet and mapped drinking-water locations.
-- [x] Add water-point status reporting.
-- [x] Build Python Lambda handlers using AWS SAM.
-- [x] Expose API endpoints through API Gateway.
-- [x] Persist reports using DynamoDB.
-- [x] Test the complete report-to-map update workflow.
-- [x] Deploy the backend to AWS.
-- [x] Deploy the frontend using Amplify Hosting.
-- [x] Evaluate Strands Agents SDK and Bedrock availability.
-- [x] Prepare the final demonstration and project documentation.
+Allowed statuses are `Working`, `Dry / not working`, and `Unable to verify`.
 
----
+## Heat-risk methodology
 
-## Why ShiftCool?
+The backend uses a transparent apparent-temperature approximation:
 
-Heat safety and access to drinking water are connected everyday needs for outdoor workers. ShiftCool brings weather-based guidance and community-informed water-point information together, with a focus on transparency, practical action, and responsible technology.
+```text
+apparent temperature =
+  air temperature + humidity factor × max(0, air temperature - 14°C) × 0.35
+```
 
-**Our principle: help workers make better-informed decisions without pretending that uncertain data can guarantee their safety.**
+Risk bands are:
 
----
+| Apparent temperature | Risk |
+| ---: | --- |
+| `< 27°C` | Lower |
+| `27–31.9°C` | Moderate |
+| `32–40.9°C` | High |
+| `≥ 41°C` | Very high |
 
-### Built for Environmental Hacks
+The calculation does not model direct solar radiation, clothing, exertion, acclimatization, shade, medical factors, or workplace controls. Numeric calculations remain in `backend/src/heat_risk.py`; the optional AI layer only explains already-calculated results.
 
-**Track 2: Heat and Water**
+## Optional AI explanations
 
-*ShiftCool — Practical heat-safety guidance. Actionable drinking-water information. A connected workflow.*
+AI explanations are disabled by default. To enable them in the deployed Lambda environment, configure:
+
+```text
+ENABLE_AI_EXPLANATION=true
+BEDROCK_MODEL_ID=amazon.nova-lite-v1:0
+```
+
+This requires the Strands SDK in the Lambda package and permission to invoke the selected Bedrock model in the deployment region. Enable it only when permitted by the hackathon rules and after verifying AWS costs and regional availability.
+
+## Data and responsible use
+
+- Open-Meteo forecasts are estimates and can change.
+- OpenStreetMap data may be incomplete, stale, inaccessible, or incorrectly tagged.
+- A mapped water point is not proof that the point is currently usable.
+- Community reports are displayed with status, freshness, count, and confidence information.
+- Overpass API usage must follow its service policy and rate limits.
+- Keep AWS IAM permissions least-privilege and monitor resource costs.
+- Never treat a lower risk indicator as a guarantee of safety.
+
+## Current status
+
+- [x] React + TypeScript dashboard
+- [x] Frontend API client and backend integration
+- [x] SAM template with Lambda, API Gateway, DynamoDB, and S3
+- [x] Deterministic heat-risk and shift-plan logic
+- [x] Open-Meteo weather integration
+- [x] Overpass water-point integration
+- [x] Community water-point reporting
+- [ ] Production AWS deployment
+- [ ] Amplify Hosting deployment
+- [ ] Optional Strands/Bedrock explanation deployment
+
+## License
+
+See [LICENSE](LICENSE).
