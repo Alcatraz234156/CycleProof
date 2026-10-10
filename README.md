@@ -1,6 +1,8 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&height=240&color=gradient&customColorList=12,6,2,20&text=ShiftCool&fontSize=78&fontColor=ffffff&fontAlignY=36&animation=fadeIn&desc=Heat-safety%20guidance%20%26%20drinking-water%20finder%20for%20outdoor%20workers&descSize=19&descAlignY=58" alt="ShiftCool banner" width="100%">
+<img src="assets/banner.svg" alt="ShiftCool: heat-safety guidance and drinking-water information for outdoor workers" width="100%">
+
+<br>
 
 <a href="https://github.com/Alcatraz234156/SHIFTCOOL">
   <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=22&pause=1200&color=FF4D2E&center=true&vCenter=true&width=640&height=45&lines=Understand+the+heat.;Plan+the+shift.;Find+water+nearby.;Stay+safe+out+there." alt="Typing animation: Understand the heat. Plan the shift. Find water nearby.">
@@ -15,7 +17,7 @@
 
 <br>
 
-<img src="https://img.shields.io/badge/Environmental%20Hacks-Track%202%3A%20Heat%20%26%20Water-ff4d2e?style=flat-square&logo=leaflet&logoColor=white" alt="Environmental Hacks Track 2">
+<img src="https://img.shields.io/badge/Environmental%20Hacks-Track%202%3A%20Heat%20%26%20Water-ff4d2e?style=flat-square" alt="Environmental Hacks Track 2">
 <img src="https://img.shields.io/badge/status-prototype-ffb000?style=flat-square" alt="Prototype">
 <img src="https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.12">
 <img src="https://img.shields.io/badge/Node-18%2B-5FA04E?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node 18+">
@@ -40,7 +42,37 @@
 > [!IMPORTANT]
 > **Prototype status:** the dashboard currently runs on **bundled sample data**. The backend API is implemented separately, and the dashboard views are **not yet connected** to it.
 
-<br>
+<img src="assets/divider.svg" alt="" width="100%">
+
+## 🔥 Why ShiftCool?
+
+Outdoor work doesn't pause when the temperature climbs. The hardest questions on a hot day are practical ones:
+
+<table>
+<tr>
+<td align="center" width="33%">
+
+### 🤔
+**How bad is it right now?**<br>
+<sub>Hourly conditions plus a humidity-adjusted screening indicator</sub>
+
+</td>
+<td align="center" width="33%">
+
+### ⏰
+**When should we work, and when should we rest?**<br>
+<sub>Shift recommendations built from the hourly risk records</sub>
+
+</td>
+<td align="center" width="33%">
+
+### 🚰
+**Where can I get water?**<br>
+<sub>Mapped drinking-water points with community status reports</sub>
+
+</td>
+</tr>
+</table>
 
 ## ✨ At a glance
 
@@ -77,7 +109,13 @@ Browse sample map locations. The API can search **OpenStreetMap** for mapped dri
 | 🗄️ | **DynamoDB report storage** | Stores community status updates |
 | 🤖 | **Optional Strands + Amazon Bedrock** | AI explanations, *disabled by default* |
 
-<br>
+### 🧱 Tech stack
+
+<p>
+  <img src="https://skillicons.dev/icons?i=react,ts,vite,python,aws,dynamodb&perline=6" alt="React, TypeScript, Vite, Python, AWS, DynamoDB">
+</p>
+
+<img src="assets/divider.svg" alt="" width="100%">
 
 ## ⚙️ How it works
 
@@ -133,14 +171,40 @@ sequenceDiagram
 
 </details>
 
-> The repository also includes a React dashboard with sample fixtures. Its current views are not wired to the API client yet.
+<details>
+<summary><b>🧭 The intended worker journey</b></summary>
 
 <br>
 
+```mermaid
+journey
+    title A hot day with ShiftCool
+    section Before the shift
+      Check the hourly forecast: 5: Worker
+      Review the risk bands: 5: Worker
+    section Planning
+      Get work/rest recommendations: 4: Worker, Supervisor
+    section On the job
+      Find nearby drinking water: 5: Worker
+      Report if a tap is dry: 4: Worker
+```
+
+</details>
+
+> The repository also includes a React dashboard with sample fixtures. Its current views are not wired to the API client yet.
+
+<img src="assets/divider.svg" alt="" width="100%">
+
 ## 🚀 Get started
 
+| Step | What you need | Time |
+| :-: | --- | :-: |
+| **1** | Node.js 18+ and npm → run the dashboard | ~2 min |
+| **2** | Python 3.12, AWS CLI, AWS SAM CLI → run the API locally | ~5 min |
+| **3** | A deployed API URL → point the frontend at it | optional |
+
 <details open>
-<summary><b>⚛️ &nbsp;Run the dashboard</b> &nbsp;<sub>Node.js 18+ and npm</sub></summary>
+<summary><b>⚛️ &nbsp;1 · Run the dashboard</b> &nbsp;<sub>Node.js 18+ and npm</sub></summary>
 
 <br>
 
@@ -163,7 +227,7 @@ The production bundle is written to `frontend/dist/`.
 </details>
 
 <details>
-<summary><b>🐍 &nbsp;Build and run the API locally</b> &nbsp;<sub>Python 3.12, AWS CLI, AWS SAM CLI</sub></summary>
+<summary><b>🐍 &nbsp;2 · Build and run the API locally</b> &nbsp;<sub>Python 3.12, AWS CLI, AWS SAM CLI</sub></summary>
 
 <br>
 
@@ -183,10 +247,17 @@ The local API is usually available at **`http://127.0.0.1:3000`**.
 - 💧 Water-point requests use **Overpass** and read report data from DynamoDB.
 - 🗄️ DynamoDB-backed routes need access to a configured table.
 
+Once it's running, try it:
+
+```powershell
+curl http://127.0.0.1:3000/health
+curl "http://127.0.0.1:3000/weather?latitude=12.97&longitude=77.59"
+```
+
 </details>
 
 <details>
-<summary><b>🔌 &nbsp;Point the frontend at an API</b></summary>
+<summary><b>🔌 &nbsp;3 · Point the frontend at an API</b></summary>
 
 <br>
 
@@ -218,7 +289,7 @@ python -m pytest tests
 
 </details>
 
-<br>
+<img src="assets/divider.svg" alt="" width="100%">
 
 ## 📡 API reference
 
@@ -266,7 +337,7 @@ Successful responses are JSON. Errors use `{ "error": "message" }`.
 
 </details>
 
-<br>
+<img src="assets/divider.svg" alt="" width="100%">
 
 ## 🌡️ Heat-risk method
 
@@ -279,6 +350,12 @@ apparent temperature = air temperature
                      × 0.35
 ```
 
+<div align="center">
+  <img src="assets/heat-scale.svg" alt="Heat-risk screening bands: Lower below 27°C, Moderate 27 to 31.9°C, High 32 to 40.9°C, Very high 41°C and above" width="100%">
+</div>
+
+<br>
+
 | Apparent temperature | Screening band |
 | ---: | :-- |
 | `< 27°C` | ![Lower](https://img.shields.io/badge/Lower-22d3c5?style=for-the-badge) |
@@ -287,7 +364,7 @@ apparent temperature = air temperature
 | `≥ 41°C` | ![Very high](https://img.shields.io/badge/Very%20high-d62828?style=for-the-badge) |
 
 <details>
-<summary><b>🧮 Worked example (matches the sample request above)</b></summary>
+<summary><b>🧮 Worked example</b></summary>
 
 <br>
 
@@ -303,10 +380,29 @@ That lands just under the 41 °C line, in the **High** band. The sample request 
 
 </details>
 
+<details>
+<summary><b>🗺️ Quick-reference grid (apparent temperature, °C)</b></summary>
+
+<br>
+
+🟦 Lower &nbsp; 🟨 Moderate &nbsp; 🟧 High &nbsp; 🟥 Very high
+
+| Air temp | 30% RH | 50% RH | 70% RH | 90% RH |
+| ---: | :-: | :-: | :-: | :-: |
+| **28°C** | 🟨 29.5 | 🟨 30.4 | 🟨 31.4 | 🟧 32.4 |
+| **32°C** | 🟧 33.9 | 🟧 35.1 | 🟧 36.4 | 🟧 37.7 |
+| **36°C** | 🟧 38.3 | 🟧 39.9 | 🟥 41.4 | 🟥 42.9 |
+| **40°C** | 🟥 42.7 | 🟥 44.5 | 🟥 46.4 | 🟥 48.2 |
+| **44°C** | 🟥 47.1 | 🟥 49.2 | 🟥 51.4 | 🟥 53.5 |
+
+<sub>Computed with the formula above. Notice how humidity alone can push the same air temperature into a higher band.</sub>
+
+</details>
+
 > [!WARNING]
 > These bands are a decision-support indicator, **not WBGT**. The calculation does not account for solar radiation, wind exposure, clothing, exertion, acclimatization, shade, medical factors, or workplace controls. Follow local heat-safety guidance, employer procedures, supervisor instructions, and emergency protocols. A lower indicator does not guarantee safe working conditions.
 
-<br>
+<img src="assets/divider.svg" alt="" width="100%">
 
 ## ☁️ Deploy to AWS
 
@@ -338,8 +434,6 @@ AI explanations are **disabled by default**. To enable them, set `ENABLE_AI_EXPL
 
 </details>
 
-<br>
-
 ## 🗂️ Repository layout
 
 <details>
@@ -349,6 +443,7 @@ AI explanations are **disabled by default**. To enable them, set `ENABLE_AI_EXPL
 
 ```text
 SHIFTCOOL/
+├── assets/                     # README graphics
 ├── backend/
 │   ├── src/
 │   │   ├── app.py              # Lambda routes and external integrations
@@ -370,8 +465,6 @@ SHIFTCOOL/
 
 </details>
 
-<br>
-
 ## 🧭 Project status
 
 - [x] Heat-risk dashboard with sample data
@@ -381,7 +474,45 @@ SHIFTCOOL/
 - [x] Optional AI explanations (off by default)
 - [ ] Connect dashboard views to the API client
 
+## ❓ FAQ
+
+<details>
+<summary><b>Does the dashboard use live weather today?</b></summary>
+
 <br>
+
+Not yet. The dashboard runs on bundled sample data. The API serves live Open-Meteo forecasts, but the dashboard views aren't connected to it yet.
+
+</details>
+
+<details>
+<summary><b>Is the risk indicator the same as WBGT?</b></summary>
+
+<br>
+
+No. It's a humidity-adjusted screening temperature meant for decision support. It ignores solar radiation, wind exposure, clothing, exertion, acclimatization, and more. Always follow local guidance and employer procedures.
+
+</details>
+
+<details>
+<summary><b>Can I trust a water point on the map?</b></summary>
+
+<br>
+
+Treat it as a lead, not a guarantee. OpenStreetMap data may be incomplete, stale, or incorrectly tagged, and community reports can be outdated. Check freshness and confidence information.
+
+</details>
+
+<details>
+<summary><b>Will AI explanations run automatically?</b></summary>
+
+<br>
+
+No. They're off by default and only run when you set `ENABLE_AI_EXPLANATION=true`.
+
+</details>
+
+<img src="assets/divider.svg" alt="" width="100%">
 
 ## 🛡️ Data and responsible use
 
@@ -394,7 +525,9 @@ SHIFTCOOL/
 - 💬 Community reports can be uncertain or outdated; check freshness and confidence information.
 - ⏱️ Respect the Overpass API usage policy and rate limits.
 
-<br>
+## 🙏 Built with
+
+[Open-Meteo](https://open-meteo.com/) for forecasts · [OpenStreetMap](https://www.openstreetmap.org/) and the [Overpass API](https://overpass-api.de/) for water points · [AWS SAM](https://aws.amazon.com/serverless/sam/) for the backend · [React](https://react.dev/) and [Vite](https://vitejs.dev/) for the dashboard.
 
 ## 📄 License
 
@@ -408,6 +541,8 @@ This project is licensed under the [MIT License](LICENSE).
 
 <sub>If ShiftCool is useful to you, a ⭐ on the repo goes a long way.</sub>
 
-<img src="https://capsule-render.vercel.app/api?type=waving&height=120&color=gradient&customColorList=12,6,2,20&section=footer" alt="" width="100%">
+<br><br>
+
+<img src="assets/divider.svg" alt="" width="60%">
 
 </div>
