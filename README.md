@@ -1,12 +1,45 @@
-# ShiftCool
+<div align="center">
 
-**Heat-safety intelligence and drinking-water assistance for outdoor workers.**
+# ☀️ ShiftCool
+
+### Heat-safety intelligence and drinking-water assistance for outdoor workers
+
+<p>
+  <strong>Understand the heat. Plan the shift. Find water nearby.</strong>
+</p>
+
+<a href="https://github.com/Alcatraz234156/SHIFTCOOL"><img src="https://img.shields.io/badge/project-ShiftCool-ff4d2e?style=for-the-badge" alt="ShiftCool project"></a>
+<img src="https://img.shields.io/badge/frontend-React%20%2B%20TypeScript-22d3c5?style=for-the-badge" alt="React and TypeScript">
+<img src="https://img.shields.io/badge/backend-Python%20%2B%20AWS%20SAM-ffb000?style=for-the-badge" alt="Python and AWS SAM">
+<a href="LICENSE"><img src="https://img.shields.io/badge/license-see%20LICENSE-161513?style=for-the-badge" alt="License"></a>
+
+<br>
+
+<a href="#-quick-start">Quick start</a>
+&nbsp;&nbsp;•&nbsp;&nbsp;
+<a href="#-architecture">Architecture</a>
+&nbsp;&nbsp;•&nbsp;&nbsp;
+<a href="#-api-reference">API reference</a>
+&nbsp;&nbsp;•&nbsp;&nbsp;
+<a href="#-deployment">Deployment</a>
+
+</div>
+
+<br>
+
+> **Built for Environmental Hacks · Track 2: Heat and Water**
 
 ShiftCool combines location-based weather screening, deterministic heat-risk calculations, shift-planning guidance, and nearby drinking-water discovery in one React application. The backend is designed for AWS Lambda and API Gateway, with DynamoDB storing community water-point reports.
 
 > **Safety notice:** ShiftCool is decision-support software, not a medical, occupational-health, or emergency-response system. Its heat indicator is not WBGT and does not guarantee safe working conditions. Follow local guidance, employer procedures, supervisor instructions, and emergency protocols.
 
-## What it does
+## ✨ What it does
+
+| 🌡️ Heat screening | 🗓️ Shift planning | 💧 Water intelligence |
+| --- | --- | --- |
+| Fetches local hourly forecasts and calculates a transparent apparent-temperature risk indicator. | Converts forecast risk into practical work, rest, hydration, and caution guidance. | Finds mapped drinking-water points and lets workers report whether they are currently usable. |
+
+### Core capabilities
 
 - Retrieves an hourly forecast from Open-Meteo for the user's location.
 - Calculates an apparent-temperature heat-risk indicator in Python.
@@ -17,7 +50,33 @@ ShiftCool combines location-based weather screening, deterministic heat-risk cal
 - Optionally explains a generated shift plan with Strands Agents SDK and Amazon Bedrock.
 - Falls back to the frontend's demo data when location permission or the backend is unavailable.
 
-## Architecture
+## 🚀 Quick start
+
+### 1. Configure the frontend
+
+```powershell
+cd frontend
+npm install
+Copy-Item .env.example .env.local
+```
+
+Set the API Gateway URL in `frontend/.env.local`:
+
+```env
+VITE_API_BASE_URL=https://YOUR_API_ID.execute-api.YOUR_REGION.amazonaws.com/prod
+```
+
+Start the app:
+
+```powershell
+npm run dev
+```
+
+Open the URL printed by Vite, normally `http://localhost:5173`.
+
+> **Tip:** If the API URL or browser location is unavailable, the UI keeps its demo data visible and shows an explanatory message.
+
+## 🧭 Architecture
 
 ```mermaid
 flowchart LR
@@ -45,7 +104,23 @@ flowchart LR
 | Strands Agents + Bedrock | Optional natural-language explanations |
 | EventBridge / SNS | Optional future refreshes and notifications |
 
-## Repository layout
+## 🎯 Product flow
+
+```text
+Choose location
+      ↓
+Fetch hourly forecast
+      ↓
+Calculate transparent heat-risk indicators
+      ↓
+Generate shift guidance
+      ↓
+Find nearby water points
+      ↓
+Report status and improve community confidence
+```
+
+## 🗂️ Repository layout
 
 ```text
 SHIFTCOOL/
@@ -67,7 +142,7 @@ SHIFTCOOL/
 └── README.md
 ```
 
-## Prerequisites
+## 🧰 Prerequisites
 
 - Node.js 18 or newer
 - Python 3.12
@@ -75,7 +150,7 @@ SHIFTCOOL/
 - AWS SAM CLI
 - An AWS account with permission to create Lambda, API Gateway, DynamoDB, S3, and IAM resources
 
-## Run the frontend locally
+## 💻 Run the frontend locally
 
 ```powershell
 cd frontend
@@ -105,7 +180,7 @@ npm run build
 
 The production files are generated in `frontend/dist/`.
 
-## Run and test the backend
+## 🧪 Run and test the backend
 
 Create a virtual environment from the repository root:
 
@@ -147,7 +222,7 @@ If `pytest` is not installed, install the project's test dependencies first:
 python -m pip install pytest
 ```
 
-## Deploy the backend
+## ☁️ Deployment
 
 From `backend/`:
 
@@ -166,7 +241,7 @@ sam deploy
 
 Do not commit generated SAM configuration files if they contain environment-specific or sensitive values.
 
-## API reference
+## 🔌 API reference
 
 All successful responses are JSON. Errors use the shape `{ "error": "message" }`.
 
@@ -206,7 +281,7 @@ All successful responses are JSON. Errors use the shape `{ "error": "message" }`
 
 Allowed statuses are `Working`, `Dry / not working`, and `Unable to verify`.
 
-## Heat-risk methodology
+## 🌡️ Heat-risk methodology
 
 The backend uses a transparent apparent-temperature approximation:
 
@@ -226,7 +301,7 @@ Risk bands are:
 
 The calculation does not model direct solar radiation, clothing, exertion, acclimatization, shade, medical factors, or workplace controls. Numeric calculations remain in `backend/src/heat_risk.py`; the optional AI layer only explains already-calculated results.
 
-## Optional AI explanations
+## 🤖 Optional AI explanations
 
 AI explanations are disabled by default. To enable them in the deployed Lambda environment, configure:
 
@@ -237,7 +312,7 @@ BEDROCK_MODEL_ID=amazon.nova-lite-v1:0
 
 This requires the Strands SDK in the Lambda package and permission to invoke the selected Bedrock model in the deployment region. Enable it only when permitted by the hackathon rules and after verifying AWS costs and regional availability.
 
-## Data and responsible use
+## 🛡️ Data and responsible use
 
 - Open-Meteo forecasts are estimates and can change.
 - OpenStreetMap data may be incomplete, stale, inaccessible, or incorrectly tagged.
@@ -247,7 +322,7 @@ This requires the Strands SDK in the Lambda package and permission to invoke the
 - Keep AWS IAM permissions least-privilege and monitor resource costs.
 - Never treat a lower risk indicator as a guarantee of safety.
 
-## Current status
+## 📍 Current status
 
 - [x] React + TypeScript dashboard
 - [x] Frontend API client and backend integration
@@ -260,6 +335,6 @@ This requires the Strands SDK in the Lambda package and permission to invoke the
 - [ ] Amplify Hosting deployment
 - [ ] Optional Strands/Bedrock explanation deployment
 
-## License
+## 📄 License
 
 See [LICENSE](LICENSE).
