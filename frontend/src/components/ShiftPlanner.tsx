@@ -1,68 +1,67 @@
-import React, { useEffect, useState } from 'react';
-import { createShiftPlan, getCoordinates, getWeather, mockShifts } from '../services';
+import React, { useState } from 'react';
+import type { CSSProperties } from 'react';
+import { mockShifts, RISK_COLOR, RISK_LABEL } from '../services';
 
-const tone = (rest: number) => (rest >= 45 ? 'var(--heat)' : rest >= 30 ? 'var(--amber)' : 'var(--cool)');
+const LO = 20, HI = 42;
 
 export const ShiftPlanner: React.FC = () => {
   const [id, setId] = useState(mockShifts[1].id);
-  const [plan, setPlan] = useState<{ recommendations: string[]; higher_risk_hours: string[]; moderate_risk_hours: string[]; limitations: string } | null>(null);
-  const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
   const shift = mockShifts.find((s) => s.id === id) || mockShifts[0];
+  const peak = Math.max(...shift.intervals.map((i) => i.projectedTempC));
 
-  useEffect(() => {
-    getCoordinates()
-      .then(({ coords }) => getWeather(coords.latitude, coords.longitude))
-      .then((weather) => createShiftPlan(weather.hourly))
-      .then(({ plan: generated }) => setPlan(generated))
-      .catch((cause: Error) => setError(cause.message));
-  }, []);
+  const copy = async () => {
+    const text = [`${shift.name}, ${shift.startTime}-${shift.endTime}`, `Zone: ${shift.workZone}`, `Supervisor: ${shift.leadSupervisor}`,
+      ...shift.intervals.map((i) => `${i.timeLabel}: ${i.projectedTempC}°C, ${i.requiredRestMinutes} min rest${i.waterCheckScheduled ? ', water check' : ''}`)].join('\n');
+    try { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 2200); } catch { setCopied(false); }
+  };
 
   return (
-    <section className="sec">
-      <div className="sec__head">
-        <div>
-          <div className="eyebrow">Day plan</div>
-          <h2>Who's out there,<br />and when to pause.</h2>
-        </div>
-        <div className="seg">
+    <section>
+      <div className="head">
+        <h2>Today's shifts</h2>
+        <div className="seg" role="group" aria-label="Choose a shift" style={{ '--i': mockShifts.findIndex((m) => m.id === id) } as CSSProperties}>
+          <span className="seg__ind" aria-hidden="true" />
           {mockShifts.map((s) => (
             <button key={s.id} aria-pressed={s.id === id} onClick={() => setId(s.id)}>
-              {s.name.split(' (')[0]}
-              <small className="num">{s.startTime}–{s.endTime}</small>
+              {s.name.split(' (')[0].replace('Shift ', '')}<small className="num">{s.startTime}–{s.endTime}</small>
             </button>
           ))}
         </div>
       </div>
 
-      <div className="bars">
-        {shift.intervals.map((iv) => (
-          <div key={iv.timeLabel}>
-            <div className="bar__col">
-              <div className="bar__fill num" style={{ height: `${((iv.projectedTempC - 20) / 22) * 100}%`, background: tone(iv.requiredRestMinutes) }}>
-                {iv.projectedTempC}°
+      <div className="cols" key={shift.id}>
+        {shift.intervals.map((iv, k) => {
+          const c = RISK_COLOR[iv.riskLevel];
+          return (
+            <div className="col" key={iv.timeLabel} style={{ '--c': c, '--k': k } as CSSProperties}>
+              <div className="col__well">
+                <div className="col__bar" style={{ height: `${Math.max(12, ((iv.projectedTempC - LO) / (HI - LO)) * 100)}%` }}>
+                  <span className="num">{iv.projectedTempC}°</span>
+                </div>
               </div>
+              <b className="num">{iv.timeLabel}</b>
+              <span>{RISK_LABEL[iv.riskLevel]}, rest {iv.requiredRestMinutes} min</span>
+              <span className="col__tags">
+                {iv.projectedTempC === peak && <em>Hottest</em>}
+                {iv.waterCheckScheduled && <em className="w">Water check</em>}
+              </span>
             </div>
-            <div className="bar__meta num">
-              <b>{iv.timeLabel}</b>{iv.requiredRestMinutes} min shade rest
-              {iv.waterCheckScheduled && <div className="chip">water check</div>}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <dl className="facts">
-        <div><dt>Crew</dt><dd>{shift.crewSize} operators</dd></div>
+        <div><dt>Crew</dt><dd>{shift.crewSize} people</dd></div>
         <div><dt>Zone</dt><dd>{shift.workZone}</dd></div>
         <div><dt>Peak heat</dt><dd className="num">{shift.peakHeatWindow}</dd></div>
         <div><dt>Supervisor</dt><dd>{shift.leadSupervisor}</dd></div>
       </dl>
 
       <div className="actions">
-        <button className="btn" onClick={() => alert(`Optimized schedule generated for ${shift.name}`)}>Auto-optimize rests</button>
-        <button className="link" onClick={() => alert(`Roster exported for ${shift.name}`)}>Export roster</button>
+        <button className="btn" onClick={copy}>Copy roster</button>
+        <span className="note" role="status">{copied ? 'Roster copied' : ''}</span>
       </div>
-      {plan && <div className="headsup"><b>Backend shift guidance —</b><span>{plan.recommendations[1]} {plan.higher_risk_hours.length} higher-risk hours identified.</span></div>}
-      {error && <div className="headsup"><b>Using demo plan —</b><span>{error}</span></div>}
     </section>
   );
 };

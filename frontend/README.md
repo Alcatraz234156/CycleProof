@@ -4,12 +4,12 @@
 
 ---
 
-## 🎨 Design System
-- **Theme**: Product-stage black canvas (`#000`) with oversized display typography and pill-shaped controls
-- **Semantic color**: Vermilion (`#ff4a1c`) for heat stress and alerts, Cyan (`#22d3c5`) for coolant, shade and safe zones, Blue (`#4da3ff`) for water; a light panel and a solid red alert slab give the page rhythm
-- **Typography**: Big Shoulders Display (headlines, readings) + Hanken Grotesk (body), bundled locally via Fontsource so the demo works offline
-- **Signature element**: the WBGT arc dial, which draws itself on load and marks the risk thresholds
-- **Map**: full-bleed stage with floating glass filter and station panels
+## Design system
+- **Look**: liquid glass. Frosted, see-through surfaces with a bright top edge sit over soft drifting light. The ambient light picks up the current heat-risk color.
+- **Palette**: mist (`#e8f0ef`), deep-water ink (`#0c2b33`), sun (`#ffb627`), water blue (`#2a6fdb`), plus one signal color that follows the heat risk.
+- **Type**: Big Shoulders Display for headlines and readings, Hanken Grotesk for text, both bundled with Fontsource.
+- **Motion**: tabs that fade out and in as you switch, a gliding glass highlight on the tabs and shift picker, a dial that draws and sweeps, numbers that count up, bars that grow in, an accordion that opens smoothly on the water list, and a rippling pin on the selected station.
+- **Accessibility**: visible focus, labelled controls, a solid fallback where backdrop blur is unsupported, and `prefers-reduced-motion` turns all motion off.
 
 ---
 
@@ -27,7 +27,7 @@ frontend/
 │   ├── main.tsx                 # React DOM mount point
 │   ├── index.css                # Environmental-tech design system & tokens
 │   ├── components/              # Modular UI components
-│   │   ├── Header.tsx           # Telemetry status, active operational zone, brand
+│   │   ├── Header.tsx           # Brand, section tabs, site status
 │   │   ├── HeatRiskSection.tsx  # WBGT gauge, environmental sensors, OSHA work-rest
 │   │   ├── ShiftPlanner.tsx     # Microclimate shift scheduler & rest allocation
 │   │   ├── WaterMap.tsx         # Leaflet GIS drinking water & misting hub map
@@ -67,22 +67,14 @@ npm run dev
 Open your browser and navigate to:
 **http://localhost:5173**
 
-### 4. Connect the deployed backend
-
-Copy `.env.example` to `.env.local` and set `VITE_API_BASE_URL` to the `ApiUrl`
-output from `sam deploy`. Restart Vite after changing environment variables.
-The dashboard then uses the backend for weather, generated shift guidance,
-nearby water points, and community water-point reports. If location access or
-the API is unavailable, the UI keeps the demo data visible and shows the error.
-
-### 5. Build for Production
+### 4. Build for Production
 To typecheck and bundle the optimized static distribution:
 ```bash
 npm run build
 ```
 The production bundle will be generated in `frontend/dist/`.
 
-### 6. Preview Production Build
+### 5. Preview Production Build
 ```bash
 npm run preview
 ```

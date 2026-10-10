@@ -88,3 +88,19 @@ export const activeThermalAlerts: ThermalAlert[] = [
     actionRequired: 'Replenish iced electrolyte dispensers at Gate 7 and West Pavilion.'
   }
 ];
+
+export const RISK_COLOR: Record<HeatRiskLevel, string> = {
+  LOW: '#1fa89a',
+  MODERATE: '#e0a400',
+  HIGH: '#ee7f1f',
+  EXTREME: '#e5502b',
+  CRITICAL: '#c4261e'
+};
+
+export const RISK_LABEL: Record<HeatRiskLevel, string> = {
+  LOW: 'Low',
+  MODERATE: 'Moderate',
+  HIGH: 'High',
+  EXTREME: 'Extreme',
+  CRITICAL: 'Critical'
+};

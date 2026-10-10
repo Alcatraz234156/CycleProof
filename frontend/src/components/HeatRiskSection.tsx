@@ -1,65 +1,80 @@
-import React, { useEffect, useState } from 'react';
-import { getCoordinates, getWeather, WeatherResponse, mockTelemetry as fallbackTelemetry, getHeatRiskLevel, getWorkRestRecommendation, activeThermalAlerts } from '../services';
+import React from 'react';
+import type { CSSProperties } from 'react';
+import { mockTelemetry as t, getHeatRiskLevel, getWorkRestRecommendation, activeThermalAlerts, RISK_COLOR, RISK_LABEL } from '../services';
 import type { HeatRiskLevel } from '../types';
+import { useCountUp } from '../lib/useCountUp';
 
-const MIN = 24, MAX = 36;
+const Count: React.FC<{ to: number; dec?: number; suffix?: string }> = ({ to, dec = 0, suffix = '' }) => (
+  <>{useCountUp(to, 1300, 0, 500).toFixed(dec)}{suffix}</>
+);
+
+const MIN = 24, MAX = 36, CX = 170, CY = 170, R = 140;
+const BANDS: { to: number; level: HeatRiskLevel }[] = [
+  { to: 26.7, level: 'LOW' }, { to: 29.4, level: 'MODERATE' }, { to: 31.1, level: 'HIGH' },
+  { to: 32.2, level: 'EXTREME' }, { to: MAX, level: 'CRITICAL' }
+];
+const frac = (v: number) => Math.min(1, Math.max(0, (v - MIN) / (MAX - MIN)));
+const pt = (f: number) => { const a = Math.PI * (1 + f); return `${(CX + R * Math.cos(a)).toFixed(2)} ${(CY + R * Math.sin(a)).toFixed(2)}`; };
+
+const Dial: React.FC<{ value: number; level: HeatRiskLevel }> = ({ value, level }) => {
+  let from = 0;
+  const shown = useCountUp(value, 1500, MIN, 350);
+  return (
+    <svg className="dial" viewBox="0 0 340 215" role="img" aria-label={`Wet-bulb globe temperature ${value} degrees, ${RISK_LABEL[level]} risk`}>
+      {BANDS.map((b, i) => {
+        const f0 = from, f1 = frac(b.to); from = f1;
+        return <path key={b.level} className="dial__arc" pathLength={1} style={{ animationDelay: `${i * 0.11}s` }}
+          d={`M ${pt(f0 + 0.004)} A ${R} ${R} 0 0 1 ${pt(f1 - 0.004)}`} stroke={RISK_COLOR[b.level]} />;
+      })}
+      <g className="dial__pin" style={{ '--r': `${frac(value) * 180}deg` } as CSSProperties}>
+        <circle className="dial__halo" cx={CX - R} cy={CY} r="16" fill="var(--risk)" />
+        <circle cx={CX - R} cy={CY} r="13" fill="var(--ink)" stroke="#fff" strokeWidth="5" />
+      </g>
+      <text x={CX} y={CY - 8} textAnchor="middle" className="dial__n">{shown.toFixed(1)}</text>
+      <text x={CX} y={CY + 26} textAnchor="middle" className="dial__u">°C wet-bulb globe</text>
+      <text x={CX - R} y={CY + 46} textAnchor="middle" className="dial__t">{MIN}°</text>
+      <text x={CX + R} y={CY + 46} textAnchor="middle" className="dial__t">{MAX}°</text>
+    </svg>
+  );
+};
 
 export const HeatRiskSection: React.FC = () => {
-  const [weather, setWeather] = useState<WeatherResponse | null>(null);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    getCoordinates()
-      .then(({ coords }) => getWeather(coords.latitude, coords.longitude))
-      .then(setWeather)
-      .catch((cause: Error) => setError(cause.message));
-  }, []);
-
-  const current = weather?.hourly[0];
-  const t = current ? {
-    ambientTempC: current.temperature_c,
-    relativeHumidity: current.relative_humidity,
-    wetBulbGlobeTempC: current.apparent_temperature_c,
-    heatIndexC: current.apparent_temperature_c,
-    uvIndex: 0,
-    solarRadiationWm2: 0
-  } : fallbackTelemetry;
-  const risk: HeatRiskLevel = current
-    ? ({ lower: 'LOW', moderate: 'MODERATE', high: 'HIGH', very_high: 'CRITICAL' } as Record<typeof current.risk_level, HeatRiskLevel>)[current.risk_level]
-    : getHeatRiskLevel(t.wetBulbGlobeTempC);
-  const p = getWorkRestRecommendation(risk);
-  const alert = activeThermalAlerts[0];
-  const pos = Math.min(100, Math.max(0, ((t.wetBulbGlobeTempC - MIN) / (MAX - MIN)) * 100));
+  const level = getHeatRiskLevel(t.wetBulbGlobeTempC);
+  const p = getWorkRestRecommendation(level);
 
   return (
-    <section>
+    <section style={{ '--risk': RISK_COLOR[level] } as CSSProperties}>
       <div className="hero">
         <div>
-          <div className="eyebrow">Right now · wet-bulb globe temp</div>
-          <h1>Work <mark>{p.workMinutes}</mark>, rest {p.restMinutes}.</h1>
-          <p>Heat risk is {risk.toLowerCase()}. {p.ppeAdvisory}</p>
+          <p className="badge"><i />{RISK_LABEL[level]} heat risk</p>
+          <h1>Work {p.workMinutes} minutes.<br />Rest {p.restMinutes}.</h1>
+          <p className="lead">{p.ppeAdvisory}</p>
         </div>
-        <div className="gauge">
-          <span className="stamp">{risk}</span>
-          <div className="gauge__num num">{t.wetBulbGlobeTempC}<small>°C</small></div>
-          <div className="gauge__cap">WBGT · above the 31.1° safe-work line</div>
-          <div className="scale"><span className="scale__pin" style={{ left: `${pos}%` }} /></div>
-          <div className="scale__labels"><span>Low</span><span>Mod</span><span>High</span><span>Extreme</span><span>Critical</span></div>
-        </div>
+        <div className="dialwrap glass"><Dial value={t.wetBulbGlobeTempC} level={level} /></div>
       </div>
 
-      <div className="split" aria-label="Work and rest split per hour">
-        <div className="split__work" style={{ flex: p.workMinutes }}>{p.workMinutes} min work</div>
-        <div className="split__rest" style={{ flex: p.restMinutes }}>{p.restMinutes} min shade · {p.hydrationMlPerHour} mL water / hr</div>
+      <div className="split" role="img" aria-label={`Each hour: ${p.workMinutes} minutes work, ${p.restMinutes} minutes rest`}>
+        <div className="split__work" style={{ flex: p.workMinutes }}>Work {p.workMinutes}</div>
+        <div className="split__rest" style={{ flex: p.restMinutes }}>{p.mandatoryShade ? 'Rest in shade' : 'Rest'} {p.restMinutes}</div>
       </div>
+      <p className="note">Every hour. Drink about {p.hydrationMlPerHour} mL of water.</p>
 
-      <div className="vitals" style={{ marginTop: '2.5rem' }}>
-        <div className="vital"><b className="num">{t.ambientTempC}°</b><span>Air temp · feels like {t.heatIndexC}°</span></div>
-        <div className="vital"><b className="num">{t.relativeHumidity}%</b><span>Humidity · sweat can't evaporate</span></div>
-        <div className="vital"><b className="num">{t.uvIndex}</b><span>UV index · {t.solarRadiationWm2} W/m²</span></div>
-      </div>
+      <dl className="readings">
+        <div><dd className="num"><Count to={t.ambientTempC} dec={1} suffix="°" /></dd><dt>Air temperature, feels like {t.heatIndexC}°</dt></div>
+        <div><dd className="num"><Count to={t.relativeHumidity} suffix="%" /></dd><dt>Humidity, so sweat evaporates slowly</dt></div>
+        <div><dd className="num"><Count to={t.uvIndex} dec={1} /></dd><dt>UV index, {t.solarRadiationWm2} W/m² of sun</dt></div>
+      </dl>
 
-      <div className="headsup"><b>{error ? 'Using demo data —' : 'Heads up —'}</b><span>{error || `${alert.description} ${alert.actionRequired}`}</span></div>
+      <ul className="alerts" aria-label="Active alerts">
+        {activeThermalAlerts.map((a) => (
+          <li key={a.id} style={{ '--c': RISK_COLOR[a.level] } as CSSProperties}>
+            <b>{a.title}</b>
+            <span>{a.description}</span>
+            <span className="alerts__do">{a.actionRequired}</span>
+            <small>{a.timestamp}</small>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 };
