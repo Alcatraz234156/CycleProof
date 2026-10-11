@@ -8,7 +8,7 @@
 
 <br>
 
-<img src="https://img.shields.io/badge/status-full--stack%20application-2ee6a0?style=for-the-badge" alt="Full-stack application">
+<img src="https://img.shields.io/badge/status-backend%20complete-2ee6a0?style=for-the-badge" alt="Backend complete">
 <img src="https://img.shields.io/badge/frontend-React%20%2B%20TypeScript-5ad7f0?style=for-the-badge&logo=react&logoColor=white" alt="React and TypeScript">
 <img src="https://img.shields.io/badge/backend-Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
 <img src="https://img.shields.io/badge/cloud-AWS-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white" alt="AWS">
@@ -20,6 +20,8 @@
 <img src="https://img.shields.io/badge/Lambda-API%20Gateway-FF9900?style=flat-square&logo=awslambda&logoColor=white" alt="Lambda and API Gateway">
 <img src="https://img.shields.io/badge/DynamoDB-%2B%20S3-4053D6?style=flat-square&logo=amazondynamodb&logoColor=white" alt="DynamoDB and S3">
 <img src="https://img.shields.io/badge/Node-18%2B-5FA04E?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node 18+">
+<img src="https://img.shields.io/badge/backend%20tests-43%20passing-2ee6a0?style=flat-square" alt="43 backend tests passing">
+<img src="https://img.shields.io/badge/Python-3.12-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.12">
 
 <br><br>
 
@@ -39,7 +41,7 @@
 > A discrepancy is a **signal for investigation, not proof of fraud**. CycleProof supports evidence-based human review. It does not automatically establish that an environmental claim is true or false.
 
 > [!NOTE]
-> **Integration status:** the AWS backend in `backend/` defines the API and its services in AWS SAM. The browser UI is still **local-first by default**, so persisting UI actions to AWS needs the frontend service and state integration to be completed (see [Current status](#-current-status)).
+> **Integration status:** the AWS backend in `backend/` is **complete and tested**: 24 API routes, a reconciliation engine, evidence storage, nightly checks, and alerts, all defined in one AWS SAM template. The browser UI still runs on **local mock data by default**. A typed API client is ready in `frontend/src/services/api.ts`, but it is not yet called from the UI store (see [Current status](#-current-status)).
 
 <details>
 <summary><b><img src="assets/icons/list.svg" height="22" align="absmiddle" alt=""> &nbsp;Table of contents</b></summary>
@@ -85,7 +87,7 @@ A recycling claim may describe material **collected, received at a facility, pro
 
 <br>
 
-The application combines a **web frontend** with a **cloud backend**. The frontend provides dashboards and review tools. The backend exposes APIs, stores application records, and manages evidence files using AWS services.
+The application combines a **web frontend** with a **serverless AWS backend**. The frontend provides dashboards and review tools. The backend exposes a JSON API, stores application records, manages private evidence files, runs the reconciliation rules on demand and every night, and raises alerts when new discrepancy signals appear.
 
 ## <img src="assets/icons/target.svg" height="32" align="absmiddle" alt=""> The problem
 
@@ -147,6 +149,7 @@ The system keeps the relationships between claims, organizations, material stage
 | <img src="assets/icons/bell.svg" height="28" align="absmiddle" alt=""> | **Notifications** | Review tasks, new discrepancies, missing evidence, and other items needing attention |
 | <img src="assets/icons/trending.svg" height="28" align="absmiddle" alt=""> | **Analytics and reporting** | Reconciliation outcomes, quantities, evidence completeness, and discrepancy trends, with claim-level and filtered reports |
 | <img src="assets/icons/gear.svg" height="28" align="absmiddle" alt=""> | **Settings and onboarding** | Preferences, reconciliation thresholds where authorized, and a walkthrough of the review workflow |
+| <img src="assets/icons/calc.svg" height="28" align="absmiddle" alt=""> | **Automated reconciliation** | Four rules (quantity mismatch, missing evidence, duplicate records, date inconsistency) run on demand per claim and nightly across open claims. Findings are deterministic, so reruns never create duplicates |
 | <img src="assets/icons/usercheck.svg" height="28" align="absmiddle" alt=""> | **Human-centered review** | Reviewers add explanations, request information, update statuses, and record outcomes. Automated flags stay separate from human decisions |
 
 > [!NOTE]
@@ -156,11 +159,13 @@ The system keeps the relationships between claims, organizations, material stage
 
 | Area | State |
 | --- | --- |
-| **Backend infrastructure** | The AWS SAM starter in `backend/` defines API Gateway, Lambda, DynamoDB, S3, EventBridge, CloudWatch, and SNS |
-| **API routes** | Health, bootstrap, claims, discrepancies, notifications, evidence import, and presigned evidence URLs are defined (see [API reference](#-api-reference)) |
+| **Backend** | **Complete.** 24 routes on API Gateway → Lambda (Python 3.12, arm64) → single-table DynamoDB, with private S3 evidence storage, a rule-based reconciliation engine, nightly EventBridge reconciliation, SNS alerts, and CloudWatch alarms |
+| **Backend tests** | 43 automated tests pass: rule unit tests plus API tests against mocked AWS (moto) |
+| **Infrastructure** | One SAM template (`backend/template.yaml`) defines every resource. Deploy with `sam build` and `sam deploy --guided` |
+| **Demo data** | `backend/scripts/seed.py` loads the same dataset the UI uses into a deployed table |
 | **Frontend** | Full review UI running on local mock records by default |
-| **Frontend ↔ backend** | Set `VITE_API_BASE_URL` to the deployed API and complete the service and state integration before UI actions persist to AWS. The frontend's mock records are **not** automatically uploaded to DynamoDB |
-| **Not yet included** | An identity provider, complete user authorization, email subscriptions, malware scanning, and a production audit guarantee |
+| **Frontend ↔ backend** | `frontend/src/services/api.ts` is a typed client for the routes the UI needs (every route except `GET /discrepancies/{id}`), including the three-step evidence upload. It is **not yet called from the UI store** (`useAppState`), so UI actions do not persist to AWS until that wiring is done. Set `VITE_API_BASE_URL` to the deployed API to enable the client |
+| **Not yet included** | Authentication and tenant-level authorization, per-stage tolerances, malware scanning, email subscriptions, and a production audit guarantee |
 
 ## <img src="assets/icons/cycle.svg" height="32" align="absmiddle" alt=""> How it works
 
@@ -225,7 +230,7 @@ flowchart TB
 ```
 
 > [!NOTE]
-> The backend starter in `backend/` defines these seven AWS services in AWS SAM. Verify the deployed stack and outputs before describing the cloud environment as live. Authentication and tenant-level authorization must be added before using real organizational data.
+> The backend in `backend/` defines these seven AWS services in AWS SAM, plus CloudWatch alarms that notify the same SNS topic. Verify the deployed stack and outputs before describing the cloud environment as live. Authentication and tenant-level authorization must be added before using real organizational data.
 
 <details>
 <summary><b><img src="assets/icons/upload.svg" height="22" align="absmiddle" alt=""> &nbsp;Flow: evidence upload</b></summary>
@@ -240,15 +245,18 @@ sequenceDiagram
     participant S as Amazon S3
     participant D as DynamoDB
 
-    B->>A: POST /evidence/upload-url
-    A-->>B: Short-lived presigned upload URL
-    B->>S: Upload file with the presigned URL
-    A->>D: Store evidence metadata
+    B->>A: POST /evidence/upload-url (claim, filename, type, size)
+    A->>D: Store evidence record (upload pending)
+    A-->>B: 5-minute presigned PUT URL and required headers
+    B->>S: PUT the file directly to S3
+    B->>A: POST /evidence/{id}/complete
+    A->>S: HEAD the object and verify the declared size
+    A->>D: Mark attached, update evidence count and timeline
     B->>A: GET /evidence/{id}/download-url
-    A-->>B: Short-lived presigned download URL
+    A-->>B: 5-minute presigned download URL
 ```
 
-The bucket is private, versioned, encrypted, and blocks public access, so the browser never receives standing access to evidence files.
+The bucket is private, versioned, encrypted, and blocks public access, so the browser never receives standing access to evidence files. The declared file size is part of the upload signature, so S3 rejects an upload of a different size, and `complete` double-checks it. Only CSV, PDF, PNG, and JPEG files up to 25 MB are accepted. A download URL is only issued once the upload is complete.
 
 </details>
 
@@ -267,14 +275,14 @@ sequenceDiagram
     participant C as CloudWatch
 
     E->>L: Scheduled trigger
-    L->>D: Read claims and records
-    L->>L: Compare quantities with configured rules
-    L->>D: Record scheduled findings
+    L->>D: Read every claim that is not Reconciled
+    L->>L: Apply the four reconciliation rules
+    L->>D: Record new findings, skipping ones already known or resolved
     L->>N: Publish alert for new discrepancy signals
     L-->>C: Logs, metrics, traces
 ```
 
-SNS only publishes. Add and confirm an email or other endpoint subscription in the AWS console to receive alerts.
+SNS only publishes. Add and confirm an email or other endpoint subscription in the AWS console to receive alerts. The same topic also receives the CloudWatch alarm notifications for Lambda errors.
 
 </details>
 
@@ -298,13 +306,13 @@ SNS only publishes. Add and confirm an email or other endpoint subscription in t
 <td width="33%" valign="top">
 
 ### <img src="assets/icons/cloud.svg" height="26" align="absmiddle" alt=""> Backend
-- Python
-- AWS Lambda
-- Amazon API Gateway
-- Amazon DynamoDB
-- Amazon S3
-- Amazon EventBridge for scheduled reconciliation
-- Amazon CloudWatch for logs, metrics, and tracing
+- Python 3.12 with boto3
+- AWS Lambda (arm64), two functions: API and scheduled reconciliation
+- Amazon API Gateway (REST, throttled)
+- Amazon DynamoDB, single table with two GSIs
+- Amazon S3 for private evidence
+- Amazon EventBridge for nightly reconciliation
+- Amazon CloudWatch for JSON logs, metrics, X-Ray tracing, and error alarms
 - Amazon SNS for alert delivery
 - AWS SAM for infrastructure definition and deployment
 
@@ -314,8 +322,9 @@ SNS only publishes. Add and confirm an email or other endpoint subscription in t
 ### <img src="assets/icons/wrench.svg" height="26" align="absmiddle" alt=""> Dev and testing
 - Node.js and npm
 - Python and pip
+- `unittest` with moto for API tests against mocked AWS
 - AWS SAM CLI
-- Docker, where the local SAM build needs it
+- Docker, where `sam local` needs it
 - Git
 
 </td>
@@ -336,26 +345,40 @@ The repository contains a frontend application and an AWS SAM backend.
 ```text
 CycleProof/
 ├── README.md
-├── assets/                 # README graphics
+├── assets/                        # README graphics and icons
 ├── backend/
-│   ├── template.yaml       # AWS SAM resources and API routes
+│   ├── README.md                  # backend reference: routes, rules, data model
+│   ├── template.yaml              # SAM stack: API, table, bucket, 2 functions, SNS, alarms
+│   ├── samconfig.toml.example
 │   ├── requirements.txt
-│   ├── src/app.py          # Lambda handlers
-│   ├── tests/
-│   └── README.md
+│   ├── requirements-dev.txt       # adds moto for the API tests
+│   ├── .env.example
+│   ├── src/
+│   │   ├── app.py                 # router, route handlers, scheduled handler
+│   │   ├── reconciliation.py      # pure rules, no AWS calls
+│   │   ├── validation.py          # input validation and enums
+│   │   └── db.py                  # DynamoDB access layer
+│   ├── scripts/seed.py            # load demo data into a table
+│   ├── seed/seed_data.json
+│   └── tests/
+│       ├── test_reconciliation.py
+│       └── test_api.py
 └── frontend/
     ├── package.json
     ├── package-lock.json
     ├── vite.config.ts
+    ├── .env.example
     └── src/
         ├── components/
-        ├── services/
+        ├── services/              # api.ts is the typed backend client
+        ├── store/
         ├── types/
+        ├── data/                  # local mock records
         ├── App.tsx
         └── main.tsx
 ```
 
-File names may differ as the project evolves. Use the actual repository files as the source of truth.
+Use the actual repository files as the source of truth if the layout changes.
 
 </details>
 
@@ -367,9 +390,9 @@ File names may differ as the project evolves. Use the actual repository files as
 <br>
 
 - **Node.js 18** or newer, and npm
-- A **Python** version supported by the Lambda runtime configured in the SAM template
+- **Python 3.12**, which matches the Lambda runtime in the SAM template
 - **AWS SAM CLI**
-- **Docker**, if your SAM build configuration requires it
+- **Docker**, only if you use `sam local start-api`
 - **AWS CLI**, for deployment
 - An **AWS account** and credentials with permissions appropriate to the resources being deployed
 
@@ -402,25 +425,41 @@ Replace the placeholders with your repository URL and directory.
 
 ## <img src="assets/icons/gear.svg" height="32" align="absmiddle" alt=""> Environment configuration
 
-The frontend needs the base URL of the deployed or locally running API. Use the variable name the application already expects. For a Vite frontend, a common convention is:
+### Frontend
+
+Copy `frontend/.env.example` to `frontend/.env` and set the API base URL. Leave it empty to keep using the built-in mock data.
 
 ```bash
-VITE_API_BASE_URL=http://127.0.0.1:3000
+VITE_API_BASE_URL=https://<api-id>.execute-api.<region>.amazonaws.com/v1
 ```
 
-For a deployed environment, set it to the API Gateway URL from the deployment outputs. The URL above is illustrative, since the actual local API URL depends on the configured SAM template.
+Use the `ApiBaseUrl` value from the stack outputs after deployment.
 
-The backend should get resource names and runtime configuration from environment variables or the SAM template. Typical settings:
+### Backend
 
-- DynamoDB table names
-- S3 evidence bucket name
-- Application environment
-- Logging level
-- Any explicitly configured reconciliation thresholds
-- The reconciliation schedule (daily at 02:00 UTC by default) and the SNS alert topic
+The SAM template sets these on both Lambda functions, so you normally never create them by hand. `backend/.env.example` documents them for local work.
+
+| Variable | Purpose |
+| --- | --- |
+| `TABLE_NAME` | DynamoDB table (`cycleproof-<env>-records`) |
+| `EVIDENCE_BUCKET` | Private S3 bucket for evidence files |
+| `ALERT_TOPIC_ARN` | SNS topic that receives review alerts |
+| `APP_ENV` | `dev`, `staging`, or `prod` |
+| `ALLOWED_ORIGIN` | Exact frontend origin allowed by CORS |
+| `DISCREPANCY_TOLERANCE_PCT` | Default tolerance before a quantity difference is flagged (5) |
+
+### SAM parameters
+
+| Parameter | Default | Notes |
+| --- | --- | --- |
+| `AppEnvironment` | `dev` | Also prefixes resource names |
+| `AllowedOrigin` | `http://localhost:5173` | Must be the exact frontend origin. Do not use `*` in production |
+| `DiscrepancyTolerancePct` | `5` | 0 to 100 |
+
+For a deployment, copy `backend/samconfig.toml.example` to `backend/samconfig.toml` and edit the region and origin. The nightly schedule is fixed at 02:00 UTC in the template.
 
 > [!CAUTION]
-> Do not commit secrets, AWS access keys, credentials, private evidence, or production environment files. Prefer IAM roles and managed secret storage. Never put secrets in `VITE_*` variables, because they are bundled into client-side code.
+> Do not commit secrets, AWS access keys, credentials, private evidence, or production environment files. `.gitignore` already excludes `.env`, `samconfig.toml`, and `.aws-sam/`. Prefer IAM roles and managed secret storage. Never put secrets in `VITE_*` variables, because they are bundled into client-side code.
 
 ## <img src="assets/icons/laptop.svg" height="32" align="absmiddle" alt=""> Running locally
 
@@ -445,19 +484,20 @@ Open the local URL printed by Vite in the terminal.
 
 <br>
 
-Open a separate terminal at the directory containing `template.yaml`. See `backend/README.md` for backend-specific notes.
+Open a separate terminal. See `backend/README.md` for backend-specific notes.
 
 ```bash
 cd backend
+python -m pip install -r requirements-dev.txt
+python -m unittest discover -s tests -v     # 43 tests, no AWS account needed
 sam validate
 sam build
-sam local start-api   # if the template defines a local API via API Gateway events
 ```
 
-SAM prints the local endpoint. Point the frontend's API base URL at the endpoint and port your environment uses.
+The API tests run against mocked AWS (moto), so they need no credentials. `sam local start-api` additionally needs Docker, and routes that touch DynamoDB or S3 need real resources and credentials.
 
 > [!NOTE]
-> Local functions may still need valid resource configuration or test data. Local execution does not create or populate cloud resources automatically.
+> Local execution does not create or populate cloud resources. Deploy the stack first, then load demo data with `backend/scripts/seed.py`.
 
 </details>
 
@@ -509,7 +549,7 @@ First-time guided deployment:
 sam deploy --guided
 ```
 
-Follow the prompts for stack name, AWS Region, deployment permissions, and template parameters. Review the generated configuration file before committing it, especially if it holds environment-specific information.
+Follow the prompts for stack name, AWS Region, and template parameters (`AppEnvironment`, `AllowedOrigin`, `DiscrepancyTolerancePct`). Set `AllowedOrigin` to the exact URL the frontend is served from. You can start from `backend/samconfig.toml.example`. Review the generated `samconfig.toml` before committing it, since it is environment-specific and `.gitignore` excludes it by default.
 
 For later deployments, if the saved configuration is appropriate:
 
@@ -520,7 +560,25 @@ sam deploy
 </details>
 
 <details>
-<summary><b>4 · Configure the frontend</b></summary>
+<summary><b>4 · Load demo data (optional)</b></summary>
+
+<br>
+
+The API never inserts demo data on its own. To load the dataset the frontend uses:
+
+```bash
+cd backend
+export AWS_PROFILE=<profile> AWS_REGION=<region>
+python scripts/seed.py --table cycleproof-dev-records          # dry run
+python scripts/seed.py --table cycleproof-dev-records --yes    # write
+```
+
+The script refuses a table that already has claims (unless `--force`), tags every record `demo: true`, and advances the id counters so new claims do not collide with seeded ones.
+
+</details>
+
+<details>
+<summary><b>5 · Configure the frontend</b></summary>
 
 <br>
 
@@ -535,25 +593,26 @@ Deploy the resulting static frontend with the hosting approach chosen for the pr
 </details>
 
 <details>
-<summary><b>5 · Subscribe to alerts</b></summary>
+<summary><b>6 · Subscribe to alerts</b></summary>
 
 <br>
 
-The stack creates an SNS topic for review alerts but no subscribers. In the AWS console, add an email or other endpoint subscription to the topic and confirm it. Without a confirmed subscription, scheduled-reconciliation alerts have nowhere to go.
+The stack creates an SNS topic for review alerts and Lambda error alarms, but no subscribers. In the AWS console, add an email or other endpoint subscription to the topic and confirm it. Without a confirmed subscription, scheduled-reconciliation alerts have nowhere to go.
 
 </details>
 
 <details>
-<summary><b>6 · Verify the deployment</b></summary>
+<summary><b>7 · Verify the deployment</b></summary>
 
 <br>
 
 Test the deployed API and frontend with **non-sensitive sample data**, and confirm that:
 
+- [ ] `GET /health` and `GET /bootstrap` return `200` from the `ApiBaseUrl`
 - [ ] API routes return the expected status codes and response formats
 - [ ] Lambda functions can access only the resources they need
 - [ ] DynamoDB operations persist and retrieve the expected records
-- [ ] Evidence upload and retrieval follow the configured access controls
+- [ ] An evidence upload completes (`upload-url`, `PUT`, `complete`) and its download URL works
 - [ ] Browser requests work with the intended CORS configuration
 - [ ] Logs are useful for diagnosis without exposing sensitive data
 - [ ] The scheduled reconciliation runs and its logs appear in CloudWatch
@@ -562,7 +621,7 @@ Test the deployed API and frontend with **non-sensitive sample data**, and confi
 </details>
 
 <details>
-<summary><b>7 · Clean up test resources</b></summary>
+<summary><b>8 · Clean up test resources</b></summary>
 
 <br>
 
@@ -572,7 +631,7 @@ If the deployment is only a disposable test, review the stack and its retained r
 sam delete
 ```
 
-Use this only when you understand which resources the stack will remove and have backed up any data you need.
+The evidence bucket is versioned, and CloudFormation cannot delete a bucket that still holds objects. Empty it, including old versions, before running `sam delete`. Use this only when you understand which resources the stack will remove and have backed up any data you need.
 
 </details>
 
@@ -580,26 +639,60 @@ Use this only when you understand which resources the stack will remove and have
 
 ## <img src="assets/icons/plug.svg" height="32" align="absmiddle" alt=""> API reference
 
-The AWS SAM starter currently defines these routes. The route definitions in `backend/template.yaml` and `backend/src/app.py` are the authoritative reference.
+The backend serves **24 routes** under the `ApiBaseUrl` stack output (it ends in `/v1`). `backend/template.yaml` routes everything through one proxy, and `backend/src/app.py` owns routing, so that file is the authoritative reference. Full request and response notes are in [`backend/README.md`](backend/README.md).
 
 | Method | Route | Purpose |
 | :-: | --- | --- |
 | ![GET](https://img.shields.io/badge/GET-5ad7f0?style=flat-square) | `/health` | Health check |
-| ![GET](https://img.shields.io/badge/GET-5ad7f0?style=flat-square) | `/bootstrap` | Load the main application datasets |
-| ![GET](https://img.shields.io/badge/GET-5ad7f0?style=flat-square) | `/claims` and `/claims/{claimId}` | List and inspect claims |
-| ![PATCH](https://img.shields.io/badge/PATCH-ffb020?style=flat-square) | `/claims/{claimId}` | Update claim status, reviewer notes, or reviewer assignment |
-| ![POST](https://img.shields.io/badge/POST-2ee6a0?style=flat-square) | `/claims/{claimId}/imports` | Import structured CSV-derived evidence rows |
-| ![GET](https://img.shields.io/badge/GET-5ad7f0?style=flat-square) | `/discrepancies` | List discrepancy records |
-| ![PATCH](https://img.shields.io/badge/PATCH-ffb020?style=flat-square) | `/discrepancies/{discrepancyId}` | Update discrepancy status and reviewer notes |
-| ![GET](https://img.shields.io/badge/GET-5ad7f0?style=flat-square) | `/notifications` | List notifications |
-| ![PATCH](https://img.shields.io/badge/PATCH-ffb020?style=flat-square) | `/notifications/{notificationId}` | Mark a notification read or unread |
-| ![POST](https://img.shields.io/badge/POST-2ee6a0?style=flat-square) | `/evidence/upload-url` | Request a short-lived presigned S3 upload URL |
-| ![GET](https://img.shields.io/badge/GET-5ad7f0?style=flat-square) | `/evidence/{evidenceId}/download-url` | Request a short-lived download URL |
+| ![GET](https://img.shields.io/badge/GET-5ad7f0?style=flat-square) | `/bootstrap` | Everything the UI needs in one call: claims, organizations, evidence, discrepancies, timeline, notifications |
+| ![GET](https://img.shields.io/badge/GET-5ad7f0?style=flat-square) | `/organizations` | List organizations |
+| ![POST](https://img.shields.io/badge/POST-2ee6a0?style=flat-square) | `/organizations` | Create an organization (`name`, `type`; optional `location`, `registrationId`, `contactName`, `status`) |
+| ![GET](https://img.shields.io/badge/GET-5ad7f0?style=flat-square) | `/organizations/{orgId}` | One organization. Claim totals, open discrepancies, and evidence gaps are computed live, never stored |
+| ![GET](https://img.shields.io/badge/GET-5ad7f0?style=flat-square) | `/claims` | List claims. Filter with `status`, `orgId`, `period`, `assignedReviewer` |
+| ![POST](https://img.shields.io/badge/POST-2ee6a0?style=flat-square) | `/claims` | Create a claim (`orgId`, `period`, `claimed`; optional stage quantities). Ids are sequential, e.g. `CP-2026-017` |
+| ![GET](https://img.shields.io/badge/GET-5ad7f0?style=flat-square) | `/claims/{claimId}` | One claim. `?include=related` adds evidence, discrepancies, and timeline |
+| ![PATCH](https://img.shields.io/badge/PATCH-ffb020?style=flat-square) | `/claims/{claimId}` | Update status, reviewer notes, assigned reviewer, evidence count, and stage quantities. Status and quantity changes are written to the timeline |
+| ![POST](https://img.shields.io/badge/POST-2ee6a0?style=flat-square) | `/claims/{claimId}/reconcile` | Run reconciliation now. Optional `{ "tolerancePct": 0-100 }`. Idempotent |
+| ![GET](https://img.shields.io/badge/GET-5ad7f0?style=flat-square) | `/claims/{claimId}/timeline` | Activity history for the claim |
+| ![POST](https://img.shields.io/badge/POST-2ee6a0?style=flat-square) | `/claims/{claimId}/notes` | Add a review note `{ note, discrepancyId? }` |
+| ![GET](https://img.shields.io/badge/GET-5ad7f0?style=flat-square) | `/claims/{claimId}/report` | Report data: stages, evidence, discrepancies, timeline, summary, and disclaimer |
+| ![POST](https://img.shields.io/badge/POST-2ee6a0?style=flat-square) | `/claims/{claimId}/imports` | Import CSV-derived rows (max 1,000). All-or-nothing: one invalid row rejects the batch |
+| ![GET](https://img.shields.io/badge/GET-5ad7f0?style=flat-square) | `/discrepancies` | List discrepancies. Filter with `claimId`, `status`, `type`, `orgId` |
+| ![GET](https://img.shields.io/badge/GET-5ad7f0?style=flat-square) | `/discrepancies/{id}` | One discrepancy |
+| ![PATCH](https://img.shields.io/badge/PATCH-ffb020?style=flat-square) | `/discrepancies/{id}` | Update `status` and `reviewerNotes`. These are human decisions and set `reviewedAt` and `resolvedAt` |
+| ![GET](https://img.shields.io/badge/GET-5ad7f0?style=flat-square) | `/notifications` | List notifications (`?unread=true`) |
+| ![PATCH](https://img.shields.io/badge/PATCH-ffb020?style=flat-square) | `/notifications/{id}` | Mark one notification read or unread `{ "read": true }` |
+| ![POST](https://img.shields.io/badge/POST-2ee6a0?style=flat-square) | `/notifications/read-all` | Mark every notification read |
+| ![GET](https://img.shields.io/badge/GET-5ad7f0?style=flat-square) | `/evidence` | List evidence (`?claimId=`) |
+| ![POST](https://img.shields.io/badge/POST-2ee6a0?style=flat-square) | `/evidence/upload-url` | Step 1 of an upload: returns a 5-minute presigned `PUT` URL |
+| ![POST](https://img.shields.io/badge/POST-2ee6a0?style=flat-square) | `/evidence/{id}/complete` | Step 3: verify the object exists in S3 with the declared size, then mark it attached |
+| ![GET](https://img.shields.io/badge/GET-5ad7f0?style=flat-square) | `/evidence/{id}/download-url` | 5-minute presigned download URL, available once the upload is complete |
+
+### Conventions
+
+- All request and response bodies are JSON. Request bodies are limited to 2 MB.
+- Errors look like `{ "error": "message", "details": [...] }`. Unknown routes return `404` and wrong methods return `405`.
+- List endpoints accept `?limit=` (1 to 1000, default 200) and `?cursor=`, and return `{ items, nextCursor? }`.
+- CORS allows only the configured `AllowedOrigin`. Gateway-generated errors (throttling, 5xx) carry the same CORS header, so the browser shows the real error.
+- The API is throttled at 50 requests per second with bursts of 100.
+
+### Evidence upload in three steps
+
+1. `POST /evidence/upload-url` with `claimId`, `filename`, `contentType` (`text/csv`, PDF, PNG, or JPEG), and `sizeBytes` (up to 25 MB).
+2. `PUT` the file to the returned `uploadUrl`, sending the returned `headers`.
+3. `POST /evidence/{id}/complete` so the backend verifies the file and updates counts and the timeline.
+
+`api.uploadEvidence()` in `frontend/src/services/api.ts` performs all three steps.
+
+### CSV imports
+
+`POST /claims/{claimId}/imports` takes `{ records: [{ reference_id, record_type, quantity_tonnes, date, source }] }`. `record_type` is a stage name. A blank quantity stays `null`, and any invalid row rejects the whole batch, with up to 20 row errors in `details`.
 
 > [!NOTE]
-> The browser UI is still local-first by default. Set `VITE_API_BASE_URL` to the deployed API and complete the service and state integration before expecting existing UI actions to persist to AWS.
+> The browser UI is still local-first by default. The typed client in `frontend/src/services/api.ts` covers the routes the UI needs, but the UI store does not call it yet. Wire it into the store's actions before expecting UI changes to persist to AWS.
 
-When the API changes, keep the frontend service layer, backend request validation, and response types aligned, and document authentication requirements, validation errors, pagination, and error responses once those contracts are final.
+> [!WARNING]
+> The API has **no authentication yet**. Anyone who can reach it can read and change all data. Add an identity provider and an API Gateway authorizer before using real data. CORS and input validation are not authorization.
 
 ## <img src="assets/icons/database.svg" height="32" align="absmiddle" alt=""> Data model
 
@@ -639,9 +732,29 @@ erDiagram
 | **Activity event** | event type, target record, description, actor, timestamp |
 | **Notification** | recipient or scope, message, related record, timestamp, read state |
 
-The actual DynamoDB table design may combine several logical entities into fewer tables. Consult the deployed schema and data-access code for partition keys, sort keys, indexes, and access patterns.
+The backend stores all of these in **one DynamoDB table** with `PK`/`SK` keys (`SK` is always `META`), for example `CLAIM#CP-2026-001`, `EVIDENCE#ev-…`, and `DISCREPANCY#disc-…`.
+
+- **GSI1** (`GSI1PK` is the entity type) lists everything of one kind, newest first.
+- **GSI2** (`GSI2PK` is `CLAIM#<id>`) returns everything that belongs to a claim in one query: evidence, discrepancies, timeline, and notifications.
+- `COUNTER#…` items hold the sequential id counters.
+- The table uses on-demand billing, encryption at rest, and point-in-time recovery.
+
+See `backend/src/db.py` for the access patterns.
 
 </details>
+
+### <img src="assets/icons/scales.svg" height="26" align="absmiddle" alt=""> Reconciliation rules
+
+Findings are **review signals, not proof of fraud**. Each one carries the compared values, the tolerance, and a plain-language explanation. The rules live in `backend/src/reconciliation.py`, which has no AWS dependencies.
+
+| Rule | Triggered when |
+| --- | --- |
+| **Quantity mismatch** | Two compatible values differ by more than the tolerance (default 5%): claimed vs collected, then each adjacent stage Collected → Received → Processed → Recovered → Dispatched. Both values must exist |
+| **Missing evidence** | An evidence record is marked missing, or a stage has a reported quantity but no attached evidence for that stage |
+| **Duplicate record** | The same reference appears more than once at the same stage within a claim |
+| **Date inconsistency** | The earliest evidence of a later stage predates the earliest evidence of an earlier stage, or evidence is dated in the future |
+
+Every finding has a deterministic id (a hash of the claim and rule fingerprint), so reruns never create duplicates, and a finding a reviewer has marked **Resolved** is not recreated. The nightly job (02:00 UTC) checks every claim that is not `Reconciled` and publishes one SNS alert if anything new was found. You can also run a single claim on demand with `POST /claims/{claimId}/reconcile`.
 
 ### <img src="assets/icons/scales.svg" height="26" align="absmiddle" alt=""> Reconciliation principles
 
@@ -662,16 +775,16 @@ The infrastructure is defined in `backend/template.yaml` across **seven AWS serv
 
 | AWS service | Role in CycleProof |
 | --- | --- |
-| **Amazon API Gateway** | Exposes the HTTPS API to the frontend |
-| **AWS Lambda** | Validates API requests, manages records, issues evidence URLs, and runs reconciliation logic |
-| **Amazon DynamoDB** | Persists claims, organizations, evidence metadata, discrepancies, timeline events, notifications, and scheduled-finding markers |
-| **Amazon S3** | Stores private, versioned, encrypted evidence files with public access blocked; the browser receives short-lived presigned URLs |
-| **Amazon EventBridge** | Triggers the scheduled reconciliation Lambda daily at 02:00 UTC by default |
-| **Amazon CloudWatch** | Collects Lambda JSON logs, metrics, and traces; alarms can be added as operational needs are defined |
-| **Amazon SNS** | Publishes review alerts when scheduled reconciliation finds new discrepancy signals; subscriptions must be configured separately |
+| **Amazon API Gateway** | Regional REST API at stage `v1` with CORS locked to one origin and throttling (50 requests per second, burst 100) |
+| **AWS Lambda** | Two Python 3.12 functions on arm64: `api-handler` (all routes) and `scheduled-reconciliation` (5-minute timeout). Each has least-privilege access to only what it needs |
+| **Amazon DynamoDB** | Single table with two GSIs, on-demand billing, encryption at rest, and point-in-time recovery |
+| **Amazon S3** | Private, versioned, encrypted evidence bucket with public access blocked, TLS-only access, and CORS limited to the frontend origin. The browser gets short-lived presigned URLs |
+| **Amazon EventBridge** | Triggers scheduled reconciliation daily at 02:00 UTC |
+| **Amazon CloudWatch** | JSON Lambda logs, X-Ray tracing, and two alarms that fire when either function reports errors |
+| **Amazon SNS** | Encrypted topic that receives review alerts and the CloudWatch alarm notifications. Subscriptions must be configured separately |
 
 > [!WARNING]
-> Deployment creates billable resources. Review the AWS pricing page and account budgets before deploying. The current starter does not include an identity provider, complete user authorization, email subscriptions, malware scanning, or a production audit guarantee.
+> Deployment creates billable resources. Review the AWS pricing page and account budgets before deploying. The backend does not include an identity provider, complete user authorization, email subscriptions, malware scanning, or a production audit guarantee.
 
 ## <img src="assets/icons/lock.svg" height="32" align="absmiddle" alt=""> Security and privacy
 
@@ -682,12 +795,12 @@ A full-stack deployment should apply controls appropriate to the sensitivity of 
 <td width="50%" valign="top">
 
 ### <img src="assets/icons/key.svg" height="26" align="absmiddle" alt=""> Access and data
-- Use **least-privilege IAM roles** for Lambda and other AWS resources
-- Keep evidence in a **private, versioned, encrypted** S3 bucket with public access blocked; hand the browser only short-lived presigned URLs
-- Validate and authorize evidence upload and download operations
-- Validate incoming API payloads and file metadata
-- Apply authentication and authorization before exposing real organizational data
-- Configure **CORS** to allow only intended frontend origins in production
+- **Least-privilege IAM:** the API function can only presign `PutObject`/`GetObject` under `evidence/*` and list the bucket
+- Evidence lives in a **private, versioned, encrypted** S3 bucket with public access blocked and TLS enforced; the browser gets only 5-minute presigned URLs
+- Upload size is part of the signature and is verified again on completion
+- Every API payload is validated, and filenames, types, sizes, and ids are checked
+- **CORS** allows only the configured frontend origin
+- **Still to add:** authentication and tenant-level authorization before any real organizational data
 
 </td>
 <td width="50%" valign="top">
@@ -695,7 +808,7 @@ A full-stack deployment should apply controls appropriate to the sensitivity of 
 ### <img src="assets/icons/shield.svg" height="26" align="absmiddle" alt=""> Hygiene and operations
 - Keep secrets out of source control and frontend environment variables
 - Use **HTTPS** for deployed traffic
-- Limit uploaded file types and sizes, and consider malware scanning for untrusted files
+- Uploads are limited to CSV, PDF, PNG, and JPEG at up to 25 MB, checked by declaration only, so add malware scanning and content verification for untrusted files
 - Avoid logging document contents, credentials, or unnecessary personal information
 - Define retention, backup, and deletion policies for evidence and review records
 - Monitor errors and resource usage, and review CloudWatch logs for unexpected behavior
@@ -703,6 +816,15 @@ A full-stack deployment should apply controls appropriate to the sensitivity of 
 </td>
 </tr>
 </table>
+
+### Before production
+
+- **No authentication or tenant isolation.** Add Cognito (or another identity provider) with an API Gateway authorizer, and scope data per organization. Review and actor names on the timeline are generic ("Reviewer") until identities exist.
+- **One global tolerance.** Processing and recovery legitimately lose mass, so a flat 5% flags normal yield loss. Agree per-stage tolerances with domain experts.
+- **Malware scanning and content verification** for uploaded files.
+- **Abandoned uploads** are not cleaned up: a started upload that never completes leaves a pending record and possibly an object. Add a cleanup job or S3 lifecycle rule.
+- `/bootstrap` and the organization endpoints load full collections (capped at 5,000 per type). Move to paginated, filtered reads at scale.
+- Review IAM policies, log and data retention, and the bucket and table deletion behavior for your environment.
 
 > [!WARNING]
 > The precise controls available depend on the authentication, storage, and deployment configuration that is actually implemented. Do not describe the application as secure or compliant solely because it uses AWS.
@@ -714,6 +836,16 @@ A full-stack deployment should apply controls appropriate to the sensitivity of 
 
 <br>
 
+Backend, from the `backend` directory:
+
+```bash
+python -m pip install -r requirements-dev.txt     # boto3 and moto
+python -m unittest discover -s tests -v           # 43 tests
+sam validate && sam build
+```
+
+The suite has two parts. `tests/test_reconciliation.py` covers the pure rules and needs no dependencies. `tests/test_api.py` exercises the real handlers against mocked DynamoDB, S3, and SNS, and is skipped automatically if `moto` is not installed.
+
 Frontend, from the `frontend` directory:
 
 ```bash
@@ -721,31 +853,29 @@ npm install
 npm run build
 ```
 
-Backend, from the `backend` directory. For a Python project using pytest:
-
-```bash
-python -m pip install -r requirements.txt
-python -m pytest
-```
-
-Adjust the dependency file or test command if the repository uses a different setup.
-
 </details>
 
 <details>
-<summary><b><img src="assets/icons/target.svg" height="22" align="absmiddle" alt=""> &nbsp;Recommended test coverage</b></summary>
+<summary><b><img src="assets/icons/target.svg" height="22" align="absmiddle" alt=""> &nbsp;What is covered</b></summary>
 
 <br>
 
-- [ ] Unit tests for quantity reconciliation and tolerance calculations
-- [ ] Validation of missing values, incompatible units, and zero denominators
-- [ ] CSV parsing, column mapping, malformed rows, and duplicate detection
-- [ ] Backend request validation and error handling
-- [ ] Data-access tests for claims, evidence metadata, and review status changes
-- [ ] API integration tests for expected response schemas and status codes
-- [ ] Authorization tests for evidence and organization-level data access
-- [ ] Frontend workflows for search, filters, review actions, notifications, and reports
-- [ ] End-to-end tests for a complete claim investigation
+**Covered by the backend suite**
+
+- [x] Quantity reconciliation, tolerances, missing values, garbage values, and zero denominators
+- [x] Missing-evidence, duplicate-record, and date-inconsistency rules
+- [x] Deterministic finding ids, and resolved findings not being recreated
+- [x] Request validation, malformed JSON, bad ids, `404` and `405`, CORS preflight
+- [x] Sequential claim ids, claim and discrepancy updates, notes, and notifications
+- [x] CSV import: all-or-nothing behavior, limits, and float storage
+- [x] The full evidence upload flow, including size-mismatch rejection
+- [x] Pagination, report and bootstrap payloads, and the scheduled handler
+
+**Still worth adding**
+
+- [ ] Authorization tests, once authentication exists
+- [ ] Frontend workflow tests for search, filters, review actions, and reports
+- [ ] End-to-end tests for a complete claim investigation against a deployed stack
 - [ ] Deployment smoke tests after infrastructure changes
 
 </details>
@@ -807,8 +937,10 @@ Adjust the dependency file or test command if the repository uses a different se
 
 <br>
 
-- Check file size and file type restrictions
-- Confirm the upload flow and any presigned URL have not expired
+- Only CSV, PDF, PNG, and JPEG up to 25 MB are accepted, and the file must match the declared `sizeBytes` exactly
+- Presigned URLs last 5 minutes, so request a new one if it expired
+- A `409` from `/complete` means the file was not uploaded yet or its size differs from the declared size
+- Confirm the PUT sends the returned `headers`, and that `AllowedOrigin` matches the page's exact origin
 - Verify S3 permissions, CORS rules, and content-type handling
 - Avoid retrying destructive or duplicate operations without checking the resulting records
 
@@ -820,8 +952,9 @@ Adjust the dependency file or test command if the repository uses a different se
 <br>
 
 - Add an email or other endpoint subscription to the SNS topic and confirm it
-- Check that the scheduled reconciliation ran (daily at 02:00 UTC by default) in the Lambda's CloudWatch logs
+- Check that the scheduled reconciliation ran (daily at 02:00 UTC) in the Lambda's CloudWatch logs
 - Alerts are published only when reconciliation finds new discrepancy signals
+- The Lambda error alarms use the same topic, so a confirmed subscription covers both
 
 </details>
 
@@ -831,8 +964,8 @@ Adjust the dependency file or test command if the repository uses a different se
 <br>
 
 - The UI is local-first by default; set `VITE_API_BASE_URL` to the deployed API
-- Complete the frontend service and state integration so UI actions call the API
-- Mock records in the frontend are not automatically uploaded to DynamoDB
+- The typed client in `frontend/src/services/api.ts` is not yet called from the UI store, so wire it into the store's actions
+- Mock records in the frontend are not uploaded automatically; load them with `backend/scripts/seed.py`
 
 </details>
 
@@ -840,18 +973,24 @@ Adjust the dependency file or test command if the repository uses a different se
 
 ## <img src="assets/icons/route.svg" height="32" align="absmiddle" alt=""> Roadmap
 
-> [!NOTE]
-> Update this section as milestones are completed. Planned work is not an existing capability.
+**Done**
 
-- [ ] Complete the frontend service and state integration with the API
-- [ ] Add an identity provider and complete user and tenant-level authorization
-- [ ] Improve reconciliation rules with domain experts
-- [ ] Expand integration and end-to-end test coverage
-- [ ] Strengthen organization-level access controls and audit protections
-- [ ] Improve large-file handling and evidence validation, including malware scanning
-- [ ] Set up alert subscriptions and CloudWatch alarms
-- [ ] Add clear export formats and reporting workflows
-- [ ] Improve operational monitoring and cost visibility
+- [x] Backend API: 24 routes covering claims, organizations, evidence, discrepancies, notes, notifications, imports, and reports
+- [x] Reconciliation engine with four rules, deterministic findings, and nightly runs
+- [x] Presigned, size-verified evidence uploads to a private S3 bucket
+- [x] SNS alerts, CloudWatch alarms, and X-Ray tracing
+- [x] Seed script and a 43-test backend suite
+- [x] Typed frontend API client
+
+**Next**
+
+- [ ] Wire the API client into the frontend store so UI actions persist to AWS
+- [ ] Add an identity provider and tenant-level authorization
+- [ ] Per-stage tolerances, agreed with domain experts
+- [ ] Malware scanning and cleanup of abandoned uploads
+- [ ] Paginated reads in place of full-collection loads
+- [ ] Alert subscriptions and any extra CloudWatch alarms
+- [ ] Frontend and end-to-end test coverage
 - [ ] Evaluate usability with recycling operators and compliance reviewers
 - [ ] Document data retention and governance practices
 
@@ -861,7 +1000,7 @@ Adjust the dependency file or test command if the repository uses a different se
 2. **Keep frontend API types aligned** with backend request and response schemas.
 3. **Add or update tests** when changing reconciliation logic or data contracts.
 4. **Avoid committing** secrets, private data, build output, or local environment files.
-5. **Run the relevant frontend and backend checks** before opening a pull request.
+5. **Run the relevant frontend and backend checks** before opening a pull request: `python -m unittest discover -s tests` in `backend/` and `npm run build` in `frontend/`.
 6. **Describe** changed behavior, testing performed, and any known limitations.
 
 ## <img src="assets/icons/scales.svg" height="32" align="absmiddle" alt=""> Disclaimer
