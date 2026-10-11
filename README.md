@@ -1013,7 +1013,7 @@ CycleProof is a software tool intended to support the review of environmental cl
 
 **CycleProof: follow the material, investigate the gaps, support transparent reporting.**
 
-<sub>Built for **AWS Environmental Hacks by WeMakeDevs** <img src="assets/icons/cycle.svg" height="18" align="absmiddle" alt=""></sub>
+<sub>Built for The **AWS Environmental Hacks hosted by WeMakeDevs** <img src="assets/icons/cycle.svg" height="18" align="absmiddle" alt=""></sub>
 
 <br><br>
 
