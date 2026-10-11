@@ -1,0 +1,14 @@
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "cycleproof-dev"
+resolve_s3 = true
+s3_prefix = "cycleproof-dev"
+region = "ap-south-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "AppEnvironment=\"dev\" AllowedOrigin=\"https://main.d2s16zx28hl89m.amplifyapp.com\" DiscrepancyTolerancePct=\"5\""
+image_repositories = []
+
+[default.global.parameters]
+region = "ap-south-1"

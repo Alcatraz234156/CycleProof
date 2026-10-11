@@ -67,3 +67,13 @@ export async function getPresignedUploadUrl(fileName: string, claimId: string): 
   if (!res.ok) throw new Error(`Failed to generate upload URL: ${res.statusText}`);
   return res.json();
 }
+
+
+export async function fetchBootstrap() {
+  const res = await fetch(`${API_BASE_URL}/bootstrap`);
+  if (!res.ok) {
+    throw new Error(`Failed to load app data: ${res.status}`);
+  }
+  return res.json();
+}
+
