@@ -1,7 +1,7 @@
 /* CycleProof: Apple iOS Liquid Glass UI Architecture */
 :root {
-  --display: 'Big Shoulders Display Variable', 'Arial Narrow', sans-serif;
-  --body: 'Hanken Grotesk Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --display: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --body: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --bg: #e8f0ef;
   --ink: #0c2b33;
   --muted: #4f6b72;
@@ -69,36 +69,70 @@ input { font: inherit; color: inherit; }
 
 /* Ambient light refraction canvas */
 .ambient { position: fixed; inset: 0; overflow: hidden; z-index: -1; pointer-events: none; }
+
+/* Micro-grid precision matrix */
+.ambient-grid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(12, 43, 51, 0.08) 1.2px, transparent 1.2px);
+  background-size: 24px 24px;
+  background-position: 0 0;
+  mask-image: radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0.85) 20%, rgba(0, 0, 0, 0.25) 75%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0.85) 20%, rgba(0, 0, 0, 0.25) 75%, transparent 100%);
+  opacity: 0.85;
+}
+
+/* Interactive cursor spotlight */
+.ambient-spotlight {
+  position: absolute;
+  width: 650px;
+  height: 650px;
+  border-radius: 50%;
+  left: var(--mouse-x, 50vw);
+  top: var(--mouse-y, 30vh);
+  transform: translate(-50%, -50%);
+  background: radial-gradient(circle, rgba(42, 111, 219, 0.16) 0%, rgba(46, 230, 160, 0.08) 40%, transparent 70%);
+  filter: blur(40px);
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  will-change: left, top;
+}
+
 .ambient i {
   position: absolute;
   border-radius: 50%;
   filter: blur(95px);
   will-change: transform;
 }
-.ambient i:nth-child(1) {
-  width: 46vmax; height: 46vmax; left: -10vmax; top: -14vmax;
-  background: #7fdacd; opacity: 0.7;
+.ambient i:nth-child(3) {
+  width: 52vmax; height: 52vmax; left: -10vmax; top: -14vmax;
+  background: #2dd4bf; opacity: 0.65;
   animation: drift1 32s ease-in-out infinite alternate;
 }
-.ambient i:nth-child(2) {
-  width: 38vmax; height: 38vmax; right: -8vmax; top: 8vh;
-  background: var(--risk); opacity: 0.32;
+.ambient i:nth-child(4) {
+  width: 44vmax; height: 44vmax; right: -8vmax; top: 6vh;
+  background: #3b82f6; opacity: 0.45;
   animation: drift2 38s ease-in-out infinite alternate;
 }
-.ambient i:nth-child(3) {
-  width: 44vmax; height: 44vmax; left: 20vw; bottom: -22vmax;
-  background: #9dbcff; opacity: 0.65;
+.ambient i:nth-child(5) {
+  width: 48vmax; height: 48vmax; left: 18vw; bottom: -20vmax;
+  background: #818cf8; opacity: 0.55;
   animation: drift3 42s ease-in-out infinite alternate;
 }
-.ambient i:nth-child(4) {
-  width: 34vmax; height: 34vmax; right: 15vw; bottom: -12vmax;
-  background: #ffdf88; opacity: 0.4;
+.ambient i:nth-child(6) {
+  width: 38vmax; height: 38vmax; right: 12vw; bottom: -10vmax;
+  background: #f59e0b; opacity: 0.35;
   animation: drift4 36s ease-in-out infinite alternate;
 }
-.ambient i:nth-child(5) {
-  width: 30vmax; height: 30vmax; left: 10vw; top: 30vh;
-  background: #a5f3fc; opacity: 0.45;
+.ambient i:nth-child(7) {
+  width: 36vmax; height: 36vmax; left: 12vw; top: 28vh;
+  background: #06b6d4; opacity: 0.45;
   animation: drift5 30s ease-in-out infinite alternate;
+}
+.ambient i:nth-child(8) {
+  width: 32vmax; height: 32vmax; right: 28vw; top: 40vh;
+  background: #ec4899; opacity: 0.22;
+  animation: drift2 44s ease-in-out infinite alternate-reverse;
 }
 
 @keyframes drift1 { 0% { transform: translate3d(0, 0, 0) scale(1); } 100% { transform: translate3d(8vmax, 6vmax, 0) scale(1.15); } }
@@ -163,27 +197,29 @@ main.leaving > section > * {
 /* Top floating navigation bar */
 .top {
   position: sticky;
-  top: 0.75rem;
+  top: 1rem;
   z-index: 20;
-  margin-top: 0.75rem;
+  margin-top: 1rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.85rem;
-  padding: 0.35rem 0.55rem 0.35rem 1rem;
+  gap: 1.1rem;
+  padding: 0.55rem 0.85rem 0.55rem 1.35rem;
   border-radius: 999px;
+  min-height: 58px;
   transition: background 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
 }
 .logo {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 0.55rem;
-  font-weight: 700;
-  font-size: 1.02rem;
+  gap: 0.65rem;
+  font-weight: 800;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
   transition: transform 0.3s var(--ease-apple);
 }
-.logo svg { width: 26px; height: 26px; transition: transform 0.6s var(--spring-apple); }
+.logo svg { width: 30px; height: 30px; transition: transform 0.6s var(--spring-apple); }
 .logo:hover svg { transform: rotate(20deg) scale(1.08); }
 
 .tabs {
@@ -244,16 +280,29 @@ main.leaving > section > * {
 /* ── Apple iOS Liquid Glass Dark Mode Core ─────────────────────────────────── */
 .cycleproof[data-theme='dark'] {
   background:
-    radial-gradient(ellipse at 15% 0%, rgba(59, 130, 246, 0.22), transparent 45%),
-    radial-gradient(ellipse at 85% 15%, rgba(139, 92, 246, 0.18), transparent 42%),
-    radial-gradient(ellipse at 50% 90%, rgba(16, 185, 129, 0.14), transparent 45%),
-    linear-gradient(160deg, #090e1a 0%, #060911 50%, #0a0f1d 100%);
+    radial-gradient(ellipse at 15% 0%, rgba(59, 130, 246, 0.28), transparent 48%),
+    radial-gradient(ellipse at 85% 15%, rgba(139, 92, 246, 0.24), transparent 45%),
+    radial-gradient(ellipse at 50% 90%, rgba(16, 185, 129, 0.18), transparent 50%),
+    linear-gradient(160deg, #070c18 0%, #040710 50%, #080d1a 100%);
 }
-.cycleproof[data-theme='dark'] .ambient i:nth-child(1) { background: #3b82f6; opacity: 0.42; filter: blur(115px); }
-.cycleproof[data-theme='dark'] .ambient i:nth-child(2) { background: #a855f7; opacity: 0.32; filter: blur(115px); }
-.cycleproof[data-theme='dark'] .ambient i:nth-child(3) { background: #10b981; opacity: 0.28; filter: blur(125px); }
-.cycleproof[data-theme='dark'] .ambient i:nth-child(4) { background: #f97316; opacity: 0.22; filter: blur(110px); }
-.cycleproof[data-theme='dark'] .ambient i:nth-child(5) { background: #6366f1; opacity: 0.35; filter: blur(105px); }
+
+.cycleproof[data-theme='dark'] .ambient-grid {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.07) 1.2px, transparent 1.2px);
+  mask-image: radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0.95) 20%, rgba(0, 0, 0, 0.35) 75%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 45%, rgba(0, 0, 0, 0.95) 20%, rgba(0, 0, 0, 0.35) 75%, transparent 100%);
+  opacity: 0.75;
+}
+
+.cycleproof[data-theme='dark'] .ambient-spotlight {
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.22) 0%, rgba(168, 85, 247, 0.12) 40%, transparent 70%);
+}
+
+.cycleproof[data-theme='dark'] .ambient i:nth-child(3) { background: #3b82f6; opacity: 0.48; filter: blur(120px); }
+.cycleproof[data-theme='dark'] .ambient i:nth-child(4) { background: #a855f7; opacity: 0.38; filter: blur(120px); }
+.cycleproof[data-theme='dark'] .ambient i:nth-child(5) { background: #10b981; opacity: 0.32; filter: blur(130px); }
+.cycleproof[data-theme='dark'] .ambient i:nth-child(6) { background: #f97316; opacity: 0.26; filter: blur(115px); }
+.cycleproof[data-theme='dark'] .ambient i:nth-child(7) { background: #6366f1; opacity: 0.40; filter: blur(110px); }
+.cycleproof[data-theme='dark'] .ambient i:nth-child(8) { background: #ec4899; opacity: 0.25; filter: blur(125px); }
 
 .cycleproof[data-theme='dark'] .top {
   background: linear-gradient(145deg, rgba(24, 34, 54, 0.58), rgba(13, 20, 36, 0.42));
@@ -647,9 +696,9 @@ h2{font-size:clamp(2.8rem,6vw,4.6rem);font-weight:800;line-height:.95}
   position: relative;
   display: flex;
   align-items: center;
-  gap: 0.12rem;
+  gap: 0.2rem;
   overflow-x: auto;
-  padding: 3px;
+  padding: 4px;
   border-radius: 999px;
   background: rgba(12, 43, 51, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.55);
@@ -692,10 +741,10 @@ h2{font-size:clamp(2.8rem,6vw,4.6rem);font-weight:800;line-height:.95}
   flex: none;
   position: relative;
   z-index: 2;
-  padding: 0.35rem 0.65rem;
+  padding: 0.48rem 0.88rem;
   border-radius: 999px;
   font-weight: 600;
-  font-size: 0.79rem;
+  font-size: 0.88rem;
   letter-spacing: -0.01em;
   color: var(--muted);
   background: transparent !important;
@@ -704,7 +753,7 @@ h2{font-size:clamp(2.8rem,6vw,4.6rem);font-weight:800;line-height:.95}
   outline: none;
   cursor: pointer;
   white-space: nowrap;
-  line-height: 1.3;
+  line-height: 1.35;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
   transition: color 0.25s var(--ease-apple), transform 0.25s var(--ease-apple);
@@ -759,8 +808,8 @@ h2{font-size:clamp(2.8rem,6vw,4.6rem);font-weight:800;line-height:.95}
 /* ── Header icons: Theme toggle, notification bell ───────────────────────── */
 .cp-icon-btn {
   position: relative;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   display: grid;
   place-items: center;
@@ -776,7 +825,7 @@ h2{font-size:clamp(2.8rem,6vw,4.6rem);font-weight:800;line-height:.95}
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
-.cp-icon-btn svg { width: 16px; height: 16px; }
+.cp-icon-btn svg { width: 18px; height: 18px; }
 .cp-icon-btn:hover {
   background: rgba(12, 43, 51, 0.12);
   transform: translateY(-1px) scale(1.05);
@@ -805,12 +854,12 @@ h2{font-size:clamp(2.8rem,6vw,4.6rem);font-weight:800;line-height:.95}
   position: absolute;
   top: 1px;
   right: 1px;
-  min-width: 15px;
-  height: 15px;
+  min-width: 16px;
+  height: 16px;
   border-radius: 999px;
   background: var(--risk);
   color: #fff;
-  font-size: 0.58rem;
+  font-size: 0.62rem;
   font-weight: 800;
   display: grid;
   place-items: center;
@@ -827,24 +876,28 @@ h2{font-size:clamp(2.8rem,6vw,4.6rem);font-weight:800;line-height:.95}
 .live {
   display: flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.55rem;
   flex-shrink: 0;
   white-space: nowrap;
 }
 .cp-live-pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.24rem 0.55rem;
+  gap: 0.45rem;
+  padding: 0.32rem 0.72rem;
   border-radius: 999px;
   background: rgba(12, 43, 51, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.4);
-  font-size: 0.74rem;
+  font-size: 0.8rem;
   font-weight: 600;
   color: var(--muted);
   white-space: nowrap;
   flex-shrink: 0;
-  line-height: 1;
+  line-height: 1.2;
+}
+.cp-live-pill .dot {
+  width: 9px;
+  height: 9px;
 }
 .cycleproof[data-theme='dark'] .cp-live-pill {
   background: rgba(255, 255, 255, 0.06);

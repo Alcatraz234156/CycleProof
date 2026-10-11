@@ -78,10 +78,27 @@ export const App: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  // Mouse movement tracking for ambient liquid glass spotlight effect
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const el = e.currentTarget;
+    const rect = el.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    el.style.setProperty('--mouse-x', `${x}px`);
+    el.style.setProperty('--mouse-y', `${y}px`);
+  }, []);
+
   return (
-    <div className="app cycleproof" data-theme={state.preferences.theme}>
-      {/* Ambient background light orbs */}
+    <div
+      className="app cycleproof"
+      data-theme={state.preferences.theme}
+      onMouseMove={handleMouseMove}
+    >
+      {/* Ambient background light orbs & micro-grid */}
       <div className="ambient" aria-hidden="true">
+        <div className="ambient-grid" />
+        <div className="ambient-spotlight" />
+        <i />
         <i />
         <i />
         <i />
