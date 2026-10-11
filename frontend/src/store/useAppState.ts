@@ -1,6 +1,6 @@
 
  // CycleProof — Central state store using localStorage persistence
-// Provides a single useAppState hook consumed by App.tsx and passed down as props.
+// Loads initial data from AWS and saves claim-status changes to AWS.
 
 import { useState, useCallback, useEffect } from 'react';
 import type {
@@ -12,7 +12,10 @@ import type {
   UserPreferences,
 } from '../types';
 import { INITIAL_APP_STATE } from '../data/mockData';
-import { fetchBootstrap } from '../services/api';
+import {
+  fetchBootstrap,
+  updateClaimStatus as updateClaimStatusAPI,
+} from '../services/api';
 
 const STORAGE_KEY = 'cycleproof_state_v1';
 
@@ -23,7 +26,6 @@ function loadState(): AppState {
 
     const parsed = JSON.parse(raw) as AppState;
 
-    // Merge preferences defensively — new keys added to DEFAULT get their defaults.
     return {
       ...INITIAL_APP_STATE,
       ...parsed,
@@ -48,7 +50,7 @@ function saveState(state: AppState) {
 export function useAppState() {
   const [state, setStateRaw] = useState<AppState>(loadState);
 
-  // Persist every change.
+  // Persist every local state change.
   useEffect(() => {
     saveState(state);
   }, [state]);
@@ -57,7 +59,8 @@ export function useAppState() {
     setStateRaw(updater);
   }, []);
 
-  // ── AWS bootstrap: load data from the deployed backend ─────────────────────
+  // ── Load live data from AWS ────────────────────────────────────────────────
+
   useEffect(() => {
     let cancelled = false;
 
@@ -78,7 +81,7 @@ export function useAppState() {
         }));
       } catch (error) {
         console.error(
-          'Failed to load CycleProof data from AWS. Keeping existing local data.',
+          'Failed to load CycleProof data from AWS. Keeping local data.',
           error
         );
       }
@@ -93,29 +96,51 @@ export function useAppState() {
 
   // ── Claim actions ──────────────────────────────────────────────────────────
 
+  // Save claim-status changes to AWS before updating the local UI.
   const updateClaimStatus = useCallback(
     (claimId: string, status: ClaimStatus, actorRole: string) => {
-      setState((prev) => {
-        const now = new Date().toISOString();
+      void (async () => {
+        try {
+          const result = await updateClaimStatusAPI(
+            claimId,
+            status,
+            undefined,
+            actorRole
+          );
 
-        const newEvent: TimelineEvent = {
-          id: `tl-${Date.now()}`,
-          claimId,
-          type: status === 'Reconciled' ? 'review_completed' : 'status_changed',
-          title: `Status changed to: ${status}`,
-          description: `Claim status updated to "${status}" by ${actorRole}.`,
-          actorRole,
-          timestamp: now,
-        };
+          setState((prev) => {
+            const now = new Date().toISOString();
 
-        return {
-          ...prev,
-          claims: prev.claims.map((c) =>
-            c.id === claimId ? { ...c, status } : c
-          ),
-          timeline: [...prev.timeline, newEvent],
-        };
-      });
+            const newEvent: TimelineEvent = {
+              id: `tl-${Date.now()}`,
+              claimId,
+              type:
+                status === 'Reconciled'
+                  ? 'review_completed'
+                  : 'status_changed',
+              title: `Status changed to: ${status}`,
+              description: `Claim status updated to "${status}" by ${actorRole}.`,
+              actorRole,
+              timestamp: now,
+            };
+
+            return {
+              ...prev,
+              claims: prev.claims.map((claim) =>
+                claim.id === claimId
+                  ? { ...claim, ...result.claim }
+                  : claim
+              ),
+              timeline: [...prev.timeline, newEvent],
+            };
+          });
+        } catch (error) {
+          console.error('Failed to save claim status to AWS:', error);
+          window.alert(
+            'Could not save the claim status to AWS. Please try again.'
+          );
+        }
+      })();
     },
     [setState]
   );
@@ -200,7 +225,7 @@ export function useAppState() {
     [setState]
   );
 
-  // ── Notification actions ───────────────────────────────────────────────────
+  // ── Notification actions ──────────────────────────────────────────────────
 
   const markNotificationRead = useCallback(
     (notifId: string) => {
@@ -339,31 +364,17 @@ export function useAppState() {
 
   return {
     state,
-
-    // Claim actions.
     updateClaimStatus,
     updateClaimReviewerNotes,
     assignReviewer,
-
-    // Discrepancy actions.
     updateDiscrepancyStatus,
-
-    // Notification actions.
     markNotificationRead,
     markAllNotificationsRead,
     markNotificationUnread,
     addNotification,
-
-    // Timeline actions.
     addTimelineEvent,
-
-    // Preferences actions.
     updatePreferences,
-
-    // CSV import.
     importEvidenceFromCSV,
-
-    // Reset.
     resetToDemo,
   };
 }
