@@ -69,7 +69,7 @@ const StageBlock: React.FC<StageBlockProps> = ({
 }) => (
   <div
     className={`cp-mj-stage${selected ? ' is-selected' : ''}`}
-    style={{ background: color }}
+    style={{ '--stage-color': color } as React.CSSProperties}
     onClick={onClick}
     role="button"
     tabIndex={0}

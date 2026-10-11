@@ -97,7 +97,7 @@ function JourneyStageBlock({ stage, maxVal, onClick }: JourneyStageBlockProps) {
   return (
     <div
       className="cp-journey-stage"
-      style={{ background: stage.color, position: 'relative' }}
+      style={{ '--stage-color': stage.color } as React.CSSProperties}
       onClick={onClick}
       role="button"
       tabIndex={0}
