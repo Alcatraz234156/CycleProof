@@ -1,0 +1,332 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  CycleProof - Environmental Claim Reconciliation Engine for the E-Waste Recycling Chain.
+  Built with AWS Lambda, DynamoDB, S3, API Gateway, EventBridge, and SNS.
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 256
+    Runtime: python3.12
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        APP_ENV: production
+        CLAIMS_TABLE: !Ref ClaimsTable
+        EVIDENCE_TABLE: !Ref EvidenceTable
+        DISCREPANCIES_TABLE: !Ref DiscrepanciesTable
+        TIMELINE_TABLE: !Ref TimelineTable
+        ORGANIZATIONS_TABLE: !Ref OrganizationsTable
+        EVIDENCE_BUCKET: !Ref EvidenceBucket
+        ALERTS_TOPIC_ARN: !Ref DiscrepancyAlertTopic
+        TOLERANCE_PCT: '5.0'
+
+Resources:
+  # ============================================================================
+  # 1. Amazon S3 - Raw CSVs, Evidence Files & Audit Reports
+  # ============================================================================
+  EvidenceBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'cycleproof-evidence-${AWS::AccountId}-${AWS::Region}'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders: ['*']
+            AllowedMethods: [GET, PUT, POST, HEAD]
+            AllowedOrigins: ['*']
+            MaxAge: 3600
+
+  # ============================================================================
+  # 2. Amazon DynamoDB - Core Application Tables
+  # ============================================================================
+  ClaimsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: CycleProof_Claims
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: orgId
+          AttributeType: S
+        - AttributeName: status
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: OrgIndex
+          KeySchema:
+            - AttributeName: orgId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: StatusIndex
+          KeySchema:
+            - AttributeName: status
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  EvidenceTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: CycleProof_Evidence
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: claimId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: ClaimIndex
+          KeySchema:
+            - AttributeName: claimId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  DiscrepanciesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: CycleProof_Discrepancies
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: claimId
+          AttributeType: S
+        - AttributeName: status
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: ClaimIndex
+          KeySchema:
+            - AttributeName: claimId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: StatusIndex
+          KeySchema:
+            - AttributeName: status
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  TimelineTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: CycleProof_Timeline
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+        - AttributeName: claimId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: ClaimIndex
+          KeySchema:
+            - AttributeName: claimId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  OrganizationsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: CycleProof_Organizations
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: id
+          KeyType: HASH
+
+  # ============================================================================
+  # 3. Amazon SNS - High Risk & Variance Alerts
+  # ============================================================================
+  DiscrepancyAlertTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: CycleProof-Discrepancy-Alerts
+      DisplayName: CycleProof Environmental Claim Alerts
+
+  # ============================================================================
+  # 4. Amazon API Gateway - REST API
+  # ============================================================================
+  CycleProofApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      Cors:
+        AllowMethods: "'GET,POST,PUT,PATCH,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
+
+  # ============================================================================
+  # 5. AWS Lambda Handlers
+  # ============================================================================
+  ClaimsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: handlers.claims_handler.lambda_handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClaimsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OrganizationsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TimelineTable
+      Events:
+        GetClaims:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CycleProofApi
+            Path: /claims
+            Method: GET
+        GetClaimById:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CycleProofApi
+            Path: /claims/{id}
+            Method: GET
+        UpdateClaim:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CycleProofApi
+            Path: /claims/{id}
+            Method: PATCH
+        GetOrganizations:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CycleProofApi
+            Path: /organizations
+            Method: GET
+
+  ReconciliationFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: handlers.reconciler_handler.lambda_handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClaimsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref DiscrepanciesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EvidenceTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TimelineTable
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt DiscrepancyAlertTopic.TopicName
+      Events:
+        ReconcileClaim:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CycleProofApi
+            Path: /claims/{id}/reconcile
+            Method: POST
+        GetDiscrepancies:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CycleProofApi
+            Path: /discrepancies
+            Method: GET
+        UpdateDiscrepancy:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CycleProofApi
+            Path: /discrepancies/{id}
+            Method: PATCH
+
+  EvidenceIngestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: handlers.evidence_handler.lambda_handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref EvidenceTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ClaimsTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TimelineTable
+        - S3CrudPolicy:
+            BucketName: !Ref EvidenceBucket
+      Events:
+        GetUploadUrl:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CycleProofApi
+            Path: /evidence/upload-url
+            Method: POST
+        ListEvidence:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CycleProofApi
+            Path: /evidence
+            Method: GET
+        AttachEvidence:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CycleProofApi
+            Path: /evidence
+            Method: POST
+        ProcessCsvUpload:
+          Type: Api
+          Properties:
+            RestApiId: !Ref CycleProofApi
+            Path: /evidence/process-csv
+            Method: POST
+
+  # ============================================================================
+  # 6. Amazon EventBridge - Scheduled Daily Audit & Periodic Checks
+  # ============================================================================
+  PeriodicAuditRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Scheduled reconciliation check for stale or pending claims
+      ScheduleExpression: 'rate(1 day)'
+      State: ENABLED
+      Targets:
+        - Arn: !GetAtt ReconciliationFunction.Arn
+          Id: PeriodicReconciliationTarget
+
+  PermissionForEventsToInvokeReconciler:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ReconciliationFunction
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt PeriodicAuditRule.Arn
+
+Outputs:
+  ApiEndpoint:
+    Description: HTTP API Gateway base endpoint URL
+    Value: !Sub 'https://${CycleProofApi}.execute-api.${AWS::Region}.amazonaws.com/prod'
+  EvidenceBucketName:
+    Description: S3 Bucket Name for document and CSV storage
+    Value: !Ref EvidenceBucket
+  DiscrepancyTopicArn:
+    Description: SNS Alert Topic ARN
+    Value: !Ref DiscrepancyAlertTopic
+
